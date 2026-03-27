@@ -488,9 +488,9 @@ body.dark .at-dect{color:#79b8ff}
 
 <!-- ═══ HEADER ════════════════════ -->
 <div class="page-header">
-  <div class="ttl">Tableau de Garde — Hôpital</div>
+  <div class="ttl">Tableau de Garde — SAMU</div>
   <div class="sub">SAMU / SMUR — Service de régulation médicale</div>
-  <div><input type="date" id="garde-date" data-field="date"/></div>
+ <div id="header-date-long" style="font-size:13px;font-weight:600;color:rgba(255,255,255,.85);margin-top:4px"></div>
 </div>
 
 <!-- ═══ BARRE DE PROGRESSION ════════════════════════════════════════ -->
@@ -894,7 +894,7 @@ body.dark .at-dect{color:#79b8ff}
   </div>
 </div>
 
-<div class="page-footer">Tableau de Garde — Usage interne &nbsp;|&nbsp; Données sauvegardées localement dans le navigateur</div>
+<div class="page-footer">Tableau de Garde — Usage interne- ©Matéo CALLÉJA 2026</div>
 </div><!-- /page -->
 
 <script src="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.min.js"></script>
@@ -1246,6 +1246,7 @@ function loadState() {
     var sd = localStorage.getItem('garde_dect');
     if (sd) { DECT = JSON.parse(sd); }
   } catch(e) { console.warn('Erreur chargement listes:', e); }
+   
 
   // Peupler les selects avec les listes chargées
   populateAll();
