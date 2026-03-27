@@ -2149,6 +2149,8 @@ document.addEventListener('keydown', function(e) {
 /* ═══════════════════════ INIT ════════════════════════════════════════ */
 document.addEventListener('DOMContentLoaded', function() {
   loadState();
+   var hdl = document.getElementById('header-date-long');
+  if (hdl) hdl.textContent = new Date().toLocaleDateString('fr-FR', {weekday:'long', day:'numeric', month:'long', year:'numeric'});
   initFirebase();
   renderPharmGarde();
   updateProgress();
