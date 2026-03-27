@@ -5,6 +5,9 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
 <title>Tableau de Garde — Hôpital</title>
 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.min.css"/>
+<!-- Firebase SDK (Realtime Database) -->
+<script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-database-compat.js"></script>
 <style>
 *,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
 body{font-family:'Segoe UI',Arial,sans-serif;font-size:13px;background:#eef1f6;color:#1a1a2e;min-height:100vh;padding:14px}
@@ -486,8 +489,8 @@ body.dark .at-dect{color:#79b8ff}
 <!-- ═══ HEADER ════════════════════ -->
 <div class="page-header">
   <div class="ttl">Tableau de Garde — Hôpital</div>
-  <div class="sub"></div>
-  <div id="header-date-long" style="font-size:25px;font-weight:600;color:rgba(255,255,255,.85);margin-top:4px"></div>
+  <div class="sub">SAMU / SMUR — Service de régulation médicale</div>
+  <div><input type="date" id="garde-date" data-field="date"/></div>
 </div>
 
 <!-- ═══ BARRE DE PROGRESSION ════════════════════════════════════════ -->
@@ -524,6 +527,7 @@ body.dark .at-dect{color:#79b8ff}
   <button class="btn-dark" id="btn-dark" onclick="toggleDark()">🌙 Mode sombre</button>
   <button class="btn-aide" onclick="openAide()">❓ Aide</button>
   <span class="save-status" id="save-status">✔ Sauvegardé</span>
+  <span id="fb-status" style="font-size:11px;font-weight:700;margin-left:6px;color:#ef4444;display:inline-flex;align-items:center;gap:2px" title="Firebase non configuré"><span style="display:inline-block;width:8px;height:8px;border-radius:50%;background:#ef4444;margin-right:4px"></span>Hors ligne</span>
 </div>
 
 <!-- ═══ MAIN GRID ════════════════════════════════════════════════════ -->
@@ -685,10 +689,11 @@ body.dark .at-dect{color:#79b8ff}
         <tbody>
           <tr><td class="sid">B1</td><td><select class="sel-achb" data-field="an-b1"></select></td><td><input type="text" class="inp-tel" data-field="an-b1-tel" placeholder="Base ou 06…"/></td></tr>
           <tr><td class="sid">B2</td><td><select class="sel-achb" data-field="an-b2"></select></td><td><input type="text" class="inp-tel" data-field="an-b2-tel" placeholder="Base ou 06…"/></td></tr>
-         
+          <tr><td class="sid">B3</td><td><select class="sel-achb" data-field="an-b3"></select></td><td><input type="text" class="inp-tel" data-field="an-b3-tel" placeholder="Base ou 06…"/></td></tr>
           <tr><td class="sid">VZ</td><td><select class="sel-avz" data-field="an-vz"></select></td><td><input type="text" class="inp-tel" data-field="an-vz-tel" placeholder="Base ou 06…"/></td></tr>
           <tr><td class="sid">St Amd</td><td><select class="sel-astam" data-field="an-stam"></select></td><td><input type="text" class="inp-tel" data-field="an-stam-tel" placeholder="Base ou 06…"/></td></tr>
-          
+          <tr><td class="sid">Nord</td><td><select class="sel-anord" data-field="an-nord"></select></td><td><input type="text" class="inp-tel" data-field="an-nord-tel" placeholder="Base ou 06…"/></td></tr>
+          <tr><td class="sid">Est</td><td><select class="sel-aest" data-field="an-est"></select></td><td><input type="text" class="inp-tel" data-field="an-est-tel" placeholder="Base ou 06…"/></td></tr>
         </tbody>
       </table>
     </div>
@@ -733,8 +738,8 @@ body.dark .at-dect{color:#79b8ff}
 
     <div class="card">
       <div class="ch ch-green" style="display:flex;justify-content:space-between;align-items:center">
-        <span>Pharmacie de Garde</span>
-        <a href="https://www.resogardes.com/index.php" target="_blank" rel="noopener" title="Trouver une pharmacie de garde en ligne" style="background:rgba(255,255,255,.22);color:#fff;border:1px solid rgba(255,255,255,.5);border-radius:10px;padding:2px 8px;font-size:10px;font-weight:700;text-decoration:none;white-space:nowrap;transition:.15s" onmouseover="this.style.background='rgba(255,255,255,.38)'" onmouseout="this.style.background='rgba(255,255,255,.22)'">🌐 Site officiel</a>
+        <span>💊 Pharmacie de Garde</span>
+        <a href="https://www.pharmaciesurordonnance.org/" target="_blank" rel="noopener" title="Trouver une pharmacie de garde en ligne" style="background:rgba(255,255,255,.22);color:#fff;border:1px solid rgba(255,255,255,.5);border-radius:10px;padding:2px 8px;font-size:10px;font-weight:700;text-decoration:none;white-space:nowrap;transition:.15s" onmouseover="this.style.background='rgba(255,255,255,.38)'" onmouseout="this.style.background='rgba(255,255,255,.22)'">🌐 Site officiel</a>
       </div>
       <div style="padding:6px 8px 8px">
         <select id="pharm-zone" onchange="renderPharmGarde()" style="width:100%;margin-bottom:5px">
@@ -889,7 +894,7 @@ body.dark .at-dect{color:#79b8ff}
   </div>
 </div>
 
-<div class="page-footer">Tableau de Garde — Usage interne — ©Matéo CALLÉJA 2026  </div>
+<div class="page-footer">Tableau de Garde — Usage interne &nbsp;|&nbsp; Données sauvegardées localement dans le navigateur</div>
 </div><!-- /page -->
 
 <script src="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.min.js"></script>
@@ -1114,6 +1119,84 @@ function refreshLeftDisplay() {
 }
 
 /* ═══════════════════════ SAVE / LOAD ════════════════════════════════ */
+/* ═══════════════════════════════════════════════════════════════════
+ *  FIREBASE — SYNCHRONISATION TEMPS RÉEL
+ *  ⚠️  Remplacez les valeurs ci-dessous par celles de votre projet
+ *      Firebase Console → Paramètres du projet → Vos applications → Web
+ * ═══════════════════════════════════════════════════════════════════ */
+var FIREBASE_CONFIG = {
+  apiKey:            "VOTRE_API_KEY",
+  authDomain:        "votre-projet.firebaseapp.com",
+  databaseURL:       "https://votre-projet-default-rtdb.europe-west1.firebasedatabase.app",
+  projectId:         "votre-projet",
+  storageBucket:     "votre-projet.appspot.com",
+  messagingSenderId: "000000000000",
+  appId:             "1:000000000000:web:0000000000000000000000"
+};
+/* Chemin dans la Realtime Database — peut être modifié si besoin */
+var FIREBASE_PATH = "garde/etat";
+
+var fbApp      = null;
+var fbDb       = null;
+var fbRef      = null;
+var fbReady    = false;
+var fbApplying = false; /* garde anti-boucle listener→UI→save→listener */
+
+function initFirebase() {
+  try {
+    if (FIREBASE_CONFIG.apiKey === "VOTRE_API_KEY") {
+      console.info("Firebase : config non renseignée — mode localStorage uniquement.");
+      setFbStatus('offline');
+      return;
+    }
+    fbApp = firebase.initializeApp(FIREBASE_CONFIG);
+    fbDb  = firebase.database();
+    fbRef = fbDb.ref(FIREBASE_PATH);
+
+    /* Indicateur de connexion */
+    fbDb.ref('.info/connected').on('value', function(snap) {
+      fbReady = snap.val() === true;
+      setFbStatus(fbReady ? 'online' : 'offline');
+    });
+
+    /* Écoute temps réel : met à jour tous les champs dès qu'un autre
+       client sauvegarde */
+    fbRef.on('value', function(snap) {
+      if (fbApplying) return;
+      var data = snap.val();
+      if (!data) return;
+      fbApplying = true;
+      document.querySelectorAll('[data-field]').forEach(function(el) {
+        var key = el.dataset.field;
+        if (data[key] !== undefined && data[key] !== null) {
+          el.value = data[key];
+        }
+      });
+      try { localStorage.setItem('garde_state', JSON.stringify(data)); } catch(e) {}
+      refreshLeftDisplay();
+      fbApplying = false;
+    });
+
+  } catch(e) {
+    console.warn("Firebase init error:", e);
+    setFbStatus('offline');
+  }
+}
+
+function setFbStatus(status) {
+  var el = document.getElementById('fb-status');
+  if (!el) return;
+  if (status === 'online') {
+    el.innerHTML = '<span style="display:inline-block;width:8px;height:8px;border-radius:50%;background:#22c55e;box-shadow:0 0 6px #22c55e;vertical-align:middle;margin-right:4px"></span>Firebase sync';
+    el.title = 'Synchronisation en temps réel active';
+    el.style.color = '#22c55e';
+  } else {
+    el.innerHTML = '<span style="display:inline-block;width:8px;height:8px;border-radius:50%;background:#ef4444;vertical-align:middle;margin-right:4px"></span>Hors ligne';
+    el.title = 'Firebase non connecté — données sauvegardées localement uniquement';
+    el.style.color = '#ef4444';
+  }
+}
+
 function saveAll() {
   try {
     // Sauvegarder les champs du tableau
@@ -1126,6 +1209,14 @@ function saveAll() {
     localStorage.setItem('garde_lists', JSON.stringify(LISTS));
     // Sauvegarder les DECT
     localStorage.setItem('garde_dect', JSON.stringify(DECT));
+    // Écrire sur Firebase si connecté
+    if (fbReady && fbRef) {
+      fbApplying = true;
+      fbRef.set(state).then(function() { fbApplying = false; }).catch(function(e) {
+        fbApplying = false;
+        console.warn('Firebase write error:', e);
+      });
+    }
     triggerSaved();
   } catch(e) {
     console.warn('Erreur sauvegarde localStorage:', e);
@@ -1650,8 +1741,7 @@ function updateProgress() {
   var now = new Date();
   var h = now.getHours(), m = now.getMinutes();
   var totalMin = h * 60 + m;
-var hdl = document.getElementById('header-date-long');
-if (hdl) hdl.textContent = new Date().toLocaleDateString('fr-FR', {weekday:'long', day:'numeric', month:'long', year:'numeric'});
+
   // Horloge
   var cl = document.getElementById('garde-clock');
   if (cl) cl.textContent = (h < 10 ? '0' : '') + h + ':' + (m < 10 ? '0' : '') + m;
@@ -1728,7 +1818,7 @@ function openResume() {
   var dateStr = dateEl ? (dateEl.value || dateEl.textContent || '').trim() : '';
 
   lines.push('TABLEAU DE GARDE — HÔPITAL');
-  lines.push('');
+  lines.push('SAMU / SMUR — Service de régulation médicale');
   lines.push('Date : ' + (dateStr || '—'));
   lines.push(sep);
 
@@ -2056,6 +2146,7 @@ document.addEventListener('keydown', function(e) {
 /* ═══════════════════════ INIT ════════════════════════════════════════ */
 document.addEventListener('DOMContentLoaded', function() {
   loadState();
+  initFirebase();
   renderPharmGarde();
   updateProgress();
   checkAutoRotation();
@@ -2204,7 +2295,7 @@ document.addEventListener('DOMContentLoaded', function() {
       </div>
 
       <div class="aide-section">
-        <div class="aide-section-title">Pharmacie de Garde</div>
+        <div class="aide-section-title">💊 Pharmacie de Garde</div>
         <div class="aide-row"><span class="aide-desc">La liste des pharmacies affichée vient des données intégrées dans le fichier. Le bouton <strong>🌐 Site officiel</strong> ouvre le site national pour trouver la pharmacie de garde en temps réel. Le sélecteur (Bourges / Vierzon / St-Amand) filtre la liste par zone.</span></div>
       </div>
 
