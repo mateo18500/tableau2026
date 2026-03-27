@@ -1,0 +1,2347 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+<title>Tableau de Garde — Hôpital</title>
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.min.css"/>
+<style>
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+body{font-family:'Segoe UI',Arial,sans-serif;font-size:13px;background:#eef1f6;color:#1a1a2e;min-height:100vh;padding:14px}
+
+/* ── Page ── */
+.page{max-width:1440px;margin:0 auto;background:#fff;border-radius:10px;box-shadow:0 4px 24px rgba(0,0,0,.11);overflow:hidden}
+
+/* ── Header ── */
+.page-header{background:linear-gradient(135deg,#1b3a6b,#2d5aa0);color:#fff;text-align:center;padding:18px 20px 14px;border-bottom:4px solid #e8b400}
+.page-header .ttl{font-size:20px;font-weight:700;letter-spacing:1.4px;text-transform:uppercase}
+.page-header .sub{font-size:12px;opacity:.8;margin-top:2px}
+.page-header input[type=date]{background:rgba(255,255,255,.18);border:1px solid rgba(255,255,255,.4);border-radius:6px;color:#fff;font-size:14px;font-weight:600;padding:4px 10px;margin-top:6px;cursor:pointer;outline:none}
+.page-header input[type=date]::-webkit-calendar-picker-indicator{filter:invert(1);opacity:.8}
+
+/* ── Save bar ── */
+.save-bar{display:flex;align-items:center;gap:8px;background:#f7f9fd;border-bottom:1px solid #dde4ef;padding:7px 14px;flex-wrap:wrap}
+.save-bar button{display:inline-flex;align-items:center;gap:4px;padding:5px 13px;border-radius:20px;font-size:12px;font-weight:700;border:none;cursor:pointer;transition:.15s}
+.btn-save{background:#2d5aa0;color:#fff}.btn-save:hover{background:#1b3a6b}
+.btn-print{background:#4a5568;color:#fff;border:none;border-radius:20px;padding:7px 20px;font-size:12px;font-weight:700;cursor:pointer;display:inline-flex;align-items:center;gap:5px;transition:.15s}.btn-print:hover{background:#2d3748}
+.btn-aide{background:#fff;color:#0d5a8a;border:1.5px solid #0d5a8a!important;display:inline-flex;align-items:center;gap:4px;padding:5px 13px;border-radius:20px;font-size:12px;font-weight:700;cursor:pointer;transition:.15s}.btn-aide:hover{background:#e8f4fc}
+body.dark .btn-aide{background:#1c2333;color:#5bb3f0;border-color:#5bb3f0!important}
+/* ── Modal Aide ── */
+.aide-modal-overlay{display:none;position:fixed;inset:0;background:rgba(0,0,0,.55);z-index:1200;align-items:center;justify-content:center}
+.aide-modal-overlay.open{display:flex}
+.aide-modal-box{background:#fff;border-radius:10px;width:min(780px,96vw);max-height:88vh;display:flex;flex-direction:column;overflow:hidden;box-shadow:0 8px 40px rgba(0,0,0,.3)}
+body.dark .aide-modal-box{background:#161b22;color:#c9d1d9}
+.aide-modal-hd{background:#0d5a8a;color:#fff;padding:12px 16px;display:flex;justify-content:space-between;align-items:center;flex-shrink:0}
+.aide-modal-hd .ttl{font-size:13px;font-weight:700;letter-spacing:.8px;text-transform:uppercase}
+.aide-modal-hd button{background:rgba(255,255,255,.15);border:1px solid rgba(255,255,255,.4);color:#fff;border-radius:50%;width:28px;height:28px;font-size:16px;cursor:pointer;display:flex;align-items:center;justify-content:center}
+.aide-modal-hd button:hover{background:rgba(255,255,255,.3)}
+.aide-modal-body{padding:16px;overflow-y:auto;flex:1}
+.aide-section{margin-bottom:14px}
+.aide-section-title{font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:.7px;color:#0d5a8a;border-bottom:1.5px solid #c8dff0;padding-bottom:4px;margin-bottom:8px}
+body.dark .aide-section-title{color:#5bb3f0;border-color:#1c3a50}
+.aide-row{display:flex;align-items:flex-start;gap:10px;padding:5px 0;border-bottom:1px solid #f0f4fa;font-size:12px}
+body.dark .aide-row{border-color:#21262d}
+.aide-row:last-child{border-bottom:none}
+.aide-btn-chip{display:inline-flex;align-items:center;white-space:nowrap;font-size:11px;font-weight:700;padding:2px 9px;border-radius:12px;flex-shrink:0;min-width:130px}
+.aide-desc{color:#374151;line-height:1.45}
+body.dark .aide-desc{color:#a0aec0}
+.btn-reset{background:#fff;color:#b82222;border:1.5px solid #b82222!important}.btn-reset:hover{background:#fef2f2}
+.btn-ref{background:#fff;color:#2a7a3b;border:1.5px solid #2a7a3b!important}.btn-ref:hover{background:#f0faf2}
+.save-status{font-size:11px;color:#2a7a3b;font-weight:600;opacity:0;transition:.4s}.save-status.show{opacity:1}
+
+/* ── Grid ── */
+.main-grid{display:grid;grid-template-columns:210px 1fr 225px;gap:0;padding:13px;background:#eef1f6}
+.col{display:flex;flex-direction:column;gap:11px}
+.col-left{padding-right:9px}
+.col-center{padding:0 9px}
+.col-right{padding-left:9px}
+
+/* ── Card ── */
+.card{background:#fff;border-radius:8px;box-shadow:0 2px 8px rgba(0,0,0,.07);overflow:hidden}
+
+/* ── Card header ── */
+.ch{font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:.8px;padding:7px 10px;color:#fff}
+.ch-blue{background:#2d5aa0}.ch-navy{background:#1b3a6b}.ch-green{background:#2a7a3b}
+.ch-red{background:#b82222}.ch-slate{background:#4a5568}.ch-teal{background:#1a6b6b}.ch-amber{background:#8a5e00}
+
+/* ── Table ── */
+.card table{width:100%;border-collapse:collapse}
+.card table th{background:#e9eef6;font-size:10.5px;font-weight:700;text-transform:uppercase;letter-spacing:.4px;color:#2d5aa0;padding:5px 8px;border-bottom:1px solid #d0d9ea;text-align:left}
+.card table td{padding:5px 7px;border-bottom:1px solid #f0f2f5;vertical-align:middle;font-size:12.5px}
+.card table tr:last-child td{border-bottom:none}
+.card table tr:hover td{background:#f7f9fd}
+
+/* ── Inputs & selects (centre/droite uniquement) ── */
+select,input[type=text],textarea{width:100%;border:1px solid #d0d9ea;border-radius:5px;padding:4px 7px;font-size:12px;font-family:inherit;color:#1a1a2e;background:#fff;outline:none;transition:.15s}
+select:focus,input[type=text]:focus,textarea:focus{border-color:#2d5aa0;box-shadow:0 0 0 2px rgba(45,90,160,.15)}
+select{cursor:pointer}
+.inp-tel{color:#2a7a3b;font-weight:600}
+.inp-sm{width:70px!important;text-align:center;font-family:monospace;font-weight:700;font-size:12px}
+
+/* ── Badges ── */
+.badge{display:inline-block;padding:2px 7px;border-radius:12px;font-size:11px;font-weight:700;white-space:nowrap}
+.bj{background:#d4edda;color:#1e6b35;border:1px solid #a8d5b5}
+.bn{background:#ccd9f0;color:#1b3a6b;border:1px solid #99b3d9}
+.bd{background:#fff3cd;color:#856404;border:1px solid #ffc107;font-family:monospace}
+.bm{background:#e2e8f0;color:#2d3748;border:1px solid #cbd5e0;font-weight:700}
+
+/* ── Left col static styles ── */
+.stat-val{font-weight:600;color:#1b3a6b;font-size:12.5px}
+.stat-dect{font-family:monospace;font-weight:700;color:#856404;font-size:12px;background:#fff3cd;padding:2px 6px;border-radius:10px;border:1px solid #ffc107}
+.stat-name{color:#1b3a6b;font-weight:600;font-size:12px;font-style:italic}
+.rl{font-weight:600;color:#333;white-space:nowrap;font-size:12px}
+
+/* ── Two-col grid ── */
+.two-col{display:grid;grid-template-columns:1fr 1fr;gap:11px}
+
+/* ── Sector badge ── */
+.sid{font-weight:700;color:#2d5aa0;width:52px}
+
+/* ── Note zone ── */
+.nz{padding:5px 10px;font-size:11px;color:#777}
+
+/* ── Numbered rows ── */
+.num-row{display:flex;align-items:center;gap:8px;padding:5px 10px;border-bottom:1px solid #f0f2f5}
+.num-row:last-child{border-bottom:none}
+.num-idx{color:#888;font-weight:700;font-size:12px;width:14px;flex-shrink:0}
+
+/* ── Action buttons ── */
+.action-btn{display:inline-flex;align-items:center;gap:5px;margin:7px;padding:7px 16px;border-radius:20px;font-weight:700;font-size:12.5px;cursor:pointer;text-decoration:none;transition:.15s}
+.ab-retour{background:#fff;border:2px solid #2d5aa0;color:#2d5aa0}.ab-retour:hover{background:#2d5aa0;color:#fff}
+
+/* ═══════════════════════════════════════════
+   REFERENCE SECTION — listes éditables
+═══════════════════════════════════════════ */
+.ref-section{background:#f0f4fb;border-top:3px solid #2d5aa0;padding:16px;display:none}
+.ref-section.open{display:block}
+.ref-section-title{font-size:15px;font-weight:700;color:#1b3a6b;margin-bottom:12px;letter-spacing:.5px;text-transform:uppercase}
+.ref-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(260px,1fr));gap:12px}
+
+/* Chaque carte de liste */
+.ref-card{background:#fff;border-radius:8px;box-shadow:0 2px 8px rgba(0,0,0,.07);overflow:hidden}
+.ref-card .ch{font-size:10px;display:flex;justify-content:space-between;align-items:center}
+.ref-card .ch button.add-btn{
+  background:rgba(255,255,255,.25);border:1px solid rgba(255,255,255,.5);
+  color:#fff;border-radius:12px;padding:1px 9px;font-size:11px;font-weight:700;cursor:pointer
+}
+.ref-card .ch button.add-btn:hover{background:rgba(255,255,255,.4)}
+
+/* Zone de liste éditable */
+.ref-list-edit{max-height:240px;overflow-y:auto;padding:4px 0}
+
+/* Chaque entrée de liste */
+.ref-entry{
+  display:flex;align-items:center;gap:4px;
+  padding:3px 8px;border-bottom:1px solid #f0f2f5;
+  transition:.1s
+}
+.ref-entry:last-child{border-bottom:none}
+.ref-entry:hover{background:#f7f9fd}
+.ref-entry input.e-nom{
+  flex:1;border:none;background:transparent;font-size:12px;
+  font-weight:500;color:#1a1a2e;padding:2px 3px;border-radius:3px;
+  outline:none;min-width:0
+}
+.ref-entry input.e-nom:focus{background:#eef1f6}
+.ref-entry input.e-dect{
+  width:60px;border:none;background:transparent;font-size:11px;
+  font-family:monospace;font-weight:700;color:#856404;
+  text-align:center;padding:2px 3px;border-radius:3px;outline:none
+}
+.ref-entry input.e-dect:focus{background:#fff3cd}
+.ref-entry button.del-btn{
+  background:none;border:none;color:#ccc;font-size:14px;
+  cursor:pointer;line-height:1;padding:0 2px;flex-shrink:0
+}
+.ref-entry button.del-btn:hover{color:#b82222}
+
+/* Config SMUR */
+.smur-cfg{padding:8px 10px}
+.smur-cfg table{width:100%;border-collapse:collapse}
+.smur-cfg table td{padding:3px 5px;font-size:12px;border-bottom:1px solid #f0f2f5}
+.smur-cfg table tr:last-child td{border-bottom:none}
+.smur-cfg label{font-size:11px;font-weight:600;color:#555}
+.smur-cfg input{width:65px;border:1px solid #d0d9ea;border-radius:4px;text-align:center;font-family:monospace;font-weight:700;font-size:12px;padding:2px 4px;color:#856404}
+.smur-cfg input:focus{outline:none;border-color:#e8b400;background:#fff3cd}
+
+/* Pharmacies (lecture seule) */
+.pharm-list{max-height:220px;overflow-y:auto;font-size:11.5px;padding:6px 10px}
+.pharm-list div{display:flex;justify-content:space-between;padding:3px 0;border-bottom:1px solid #f0f2f5}
+.pharm-list div:last-child{border-bottom:none}
+.pharm-nm{font-weight:500;color:#333}
+.pharm-tel{color:#2a7a3b;font-weight:600;white-space:nowrap;margin-left:6px}
+
+/* ── Compact SMUR résumé ── */
+.smur-sum-row{display:flex;align-items:center;justify-content:space-between;padding:6px 10px;border-bottom:1px solid #f0f2f5;gap:4px}
+.smur-sum-row.brd0{border-bottom:none}
+.ss-lbl{font-weight:600;color:#333;font-size:12px;flex:1;white-space:nowrap}
+
+/* ── Footer ── */
+.page-footer{background:#1b3a6b;color:rgba(255,255,255,.6);text-align:center;font-size:11px;padding:9px;letter-spacing:.4px}
+
+/* ══ Modal Organisation SMUR ══════════════════════════════════════════ */
+.smur-modal-overlay{
+  display:none;position:fixed;inset:0;
+  background:rgba(10,20,50,.62);backdrop-filter:blur(3px);
+  z-index:9000;align-items:center;justify-content:center;padding:18px
+}
+.smur-modal-overlay.open{display:flex}
+.smur-modal-box{
+  background:#fff;border-radius:12px;max-width:1100px;width:100%;
+  box-shadow:0 12px 48px rgba(0,0,0,.35);overflow:hidden;
+  max-height:90vh;overflow-y:auto;animation:smurFadeIn .18s ease
+}
+@keyframes smurFadeIn{from{opacity:0;transform:translateY(-18px)}to{opacity:1;transform:none}}
+.smur-modal-hd{
+  background:linear-gradient(135deg,#1b3a6b,#2d5aa0);color:#fff;
+  padding:13px 18px;display:flex;align-items:center;justify-content:space-between;
+  border-bottom:3px solid #e8b400;position:sticky;top:0;z-index:1
+}
+.smur-modal-hd .ttl{font-size:13px;font-weight:700;letter-spacing:.8px;text-transform:uppercase}
+.smur-modal-hd button{
+  background:rgba(255,255,255,.15);border:1px solid rgba(255,255,255,.4);
+  color:#fff;border-radius:50%;width:28px;height:28px;font-size:16px;line-height:1;
+  cursor:pointer;display:flex;align-items:center;justify-content:center
+}
+.smur-modal-hd button:hover{background:rgba(255,255,255,.3)}
+.smur-modal-body{padding:16px}
+
+/* Planning grid */
+.smur-plan-wrap{overflow-x:auto}
+.smur-plan-table{border-collapse:collapse;min-width:700px;width:100%;font-size:11px}
+.smur-plan-table th,.smur-plan-table td{border:1px solid #c8d3e8;padding:0}
+.smur-plan-table thead th{
+  background:#1b3a6b;color:#fff;font-size:10px;font-weight:700;
+  text-align:center;padding:4px 2px;white-space:nowrap
+}
+.smur-plan-table thead th.th-lbl{background:#2d5aa0;text-align:left;padding:4px 8px;min-width:130px}
+.smur-plan-table thead th.th-hr{min-width:26px;width:26px}
+.smur-plan-table tbody tr:hover .smc-lbl{background:#eef1f6}
+
+/* Label cell */
+.smc-lbl{
+  padding:5px 8px;background:#f5f7fc;white-space:nowrap;font-weight:600;
+  color:#1b3a6b;font-size:11px;border-right:2px solid #2d5aa0;vertical-align:middle
+}
+.smc-lbl .dect-tag{
+  display:inline-block;font-size:10px;font-family:monospace;font-weight:700;
+  background:#fff3cd;color:#856404;border:1px solid #ffc107;
+  border-radius:8px;padding:1px 5px;margin-left:4px
+}
+
+/* Block cells */
+.smc-empty{background:#f5f7fc}
+.smc-orange{background:#f97316;color:#fff;text-align:center;font-size:9px;font-weight:700;vertical-align:middle}
+.smc-yellow{background:#fbbf24;color:#7a4f00;text-align:center;font-size:9px;font-weight:700;vertical-align:middle}
+.smc-lime{background:#86efac;color:#166534;text-align:center;font-size:9px;font-weight:700;vertical-align:middle}
+.smc-blue{background:#60a5fa;color:#1e3a8a;text-align:center;font-size:9px;font-weight:700;vertical-align:middle}
+.smc-dkblue{background:#2563eb;color:#fff;text-align:center;font-size:9px;font-weight:700;vertical-align:middle}
+.smc-salmon{background:#fca5a5;color:#7f1d1d;text-align:center;font-size:9px;font-weight:700;vertical-align:middle}
+.smc-pink{background:#f9a8d4;color:#831843;text-align:center;font-size:9px;font-weight:700;vertical-align:middle}
+.smc-dkgreen{background:#16a34a;color:#fff;text-align:center;font-size:9px;font-weight:700;vertical-align:middle}
+
+/* Separator row */
+.smur-plan-sep td{background:#e8b400;height:3px;padding:0;border:none}
+
+/* Legend */
+.smur-legend{display:flex;flex-wrap:wrap;gap:8px;margin-top:12px;font-size:11px}
+.smur-legend-item{display:flex;align-items:center;gap:4px;font-weight:500;color:#333}
+.smur-legend-dot{width:14px;height:14px;border-radius:3px;flex-shrink:0;border:1px solid rgba(0,0,0,.15)}
+
+/* ── Pharmacies de garde (carte principale) ── */
+.pharm-garde-list{max-height:175px;overflow-y:auto;margin-top:4px}
+.pharm-garde-row{display:flex;align-items:baseline;justify-content:space-between;padding:3px 0;border-bottom:1px solid #f0f2f5;gap:4px}
+.pharm-garde-row:last-child{border-bottom:none}
+.pharm-garde-nm{font-size:11px;font-weight:500;color:#1a1a2e;flex:1;min-width:0;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.pharm-garde-tel{font-size:10.5px;font-weight:700;color:#2a7a3b;white-space:nowrap;font-family:monospace;flex-shrink:0}
+
+/* ══ Barre de progression de garde ══════════════════════════════════ */
+.garde-prog-wrap{
+  background:linear-gradient(135deg,#162d56,#1e3d73);
+  padding:9px 18px 8px;display:flex;align-items:center;gap:18px;flex-wrap:wrap;
+  border-bottom:2px solid rgba(232,180,0,.35)
+}
+.garde-clock-block{display:flex;flex-direction:column;align-items:center;flex-shrink:0}
+.garde-clock{font-size:24px;font-weight:700;color:#fff;font-family:monospace;letter-spacing:3px;line-height:1}
+.garde-clock-lbl{font-size:9px;color:rgba(255,255,255,.45);margin-top:2px;letter-spacing:.5px;text-transform:uppercase}
+.garde-shift-wrap{flex:1;min-width:160px}
+.garde-shift-hd{display:flex;justify-content:space-between;align-items:baseline;margin-bottom:3px}
+.garde-shift-title{font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:.6px;color:rgba(255,255,255,.45);transition:.3s}
+.garde-shift-title.gactive{color:#e8b400}
+.garde-shift-stat{font-size:10px;font-family:monospace;font-weight:700;color:rgba(255,255,255,.4);transition:.3s}
+.garde-shift-stat.gactive{color:#e8b400}
+.garde-track{height:6px;background:rgba(255,255,255,.1);border-radius:4px;overflow:hidden}
+.garde-fill{height:100%;border-radius:4px;background:rgba(255,255,255,.18);transition:width 1s ease}
+.garde-fill.gactive{background:linear-gradient(90deg,#e8b400,#ffe566)}
+
+/* ══ Mode sombre ══════════════════════════════════════════════════════ */
+body.dark{background:#0d1117;color:#c9d1d9}
+body.dark .page{background:#161b22;box-shadow:0 4px 24px rgba(0,0,0,.55)}
+body.dark .page-header{background:linear-gradient(135deg,#0d1117,#1c2333)}
+body.dark .garde-prog-wrap{background:linear-gradient(135deg,#0d1117,#1c2333)}
+body.dark .save-bar{background:#161b22;border-color:#30363d}
+body.dark .main-grid{background:#0d1117}
+body.dark .card{background:#161b22;box-shadow:0 2px 8px rgba(0,0,0,.4)}
+body.dark .card table th{background:#1c2333;color:#79b8ff;border-color:#30363d}
+body.dark .card table td{border-color:#21262d;color:#c9d1d9}
+body.dark .card table tr:hover td{background:#1c2333}
+body.dark select,body.dark input[type=text],body.dark textarea{background:#1c2333;border-color:#30363d;color:#c9d1d9}
+body.dark select:focus,body.dark input[type=text]:focus,body.dark textarea:focus{border-color:#58a6ff;box-shadow:0 0 0 2px rgba(88,166,255,.15)}
+body.dark .stat-val,body.dark .stat-name{color:#79b8ff}
+body.dark .rl,body.dark .ss-lbl{color:#c9d1d9}
+body.dark .nz{color:#8b949e}
+body.dark .smur-sum-row,body.dark .num-row{border-color:#21262d}
+body.dark .ref-section{background:#0d1117;border-color:#58a6ff}
+body.dark .ref-section-title{color:#79b8ff}
+body.dark .ref-card{background:#161b22}
+body.dark .ref-entry{border-color:#21262d}
+body.dark .ref-entry:hover{background:#1c2333}
+body.dark .ref-entry input.e-nom{color:#c9d1d9}
+body.dark .ref-entry input.e-nom:focus{background:#21262d}
+body.dark .pharm-garde-row{border-color:#21262d}
+body.dark .pharm-garde-nm{color:#c9d1d9}
+body.dark .smur-cfg table td{border-color:#21262d}
+body.dark .smur-cfg label{color:#8b949e}
+body.dark .page-footer{background:#0d1117}
+body.dark .btn-ref{background:#161b22;color:#3fb950;border-color:#3fb950!important}
+body.dark .btn-reset{background:#161b22;color:#f85149;border-color:#f85149!important}
+body.dark .btn-dark{background:#161b22;color:#e8b400;border-color:#e8b400!important}
+body.dark .smur-modal-box,body.dark .resume-modal-box{background:#161b22}
+body.dark .smur-plan-table th,body.dark .smur-plan-table td{border-color:#30363d}
+body.dark .smc-lbl{background:#1c2333;color:#79b8ff}
+body.dark .smc-empty{background:#161b22}
+body.dark .resume-text{background:#1c2333;border-color:#30363d;color:#c9d1d9}
+body.dark .pharm-list div{border-color:#21262d}
+body.dark .pharm-nm{color:#c9d1d9}
+
+/* ── Boutons barre (dark + résumé) ── */
+.btn-dark{background:#fff;color:#1b3a6b;border:1.5px solid #1b3a6b!important}.btn-dark:hover{background:#eef1f6}
+.btn-resume{background:#fff;color:#8a5e00;border:1.5px solid #c8930a!important}.btn-resume:hover{background:#fffbeb}
+
+/* ══ Modal Résumé ════════════════════════════════════════════════════ */
+.resume-modal-overlay{
+  display:none;position:fixed;inset:0;
+  background:rgba(10,20,50,.62);backdrop-filter:blur(3px);
+  z-index:9001;align-items:center;justify-content:center;padding:18px
+}
+.resume-modal-overlay.open{display:flex}
+.resume-modal-box{
+  background:#fff;border-radius:12px;max-width:580px;width:100%;
+  box-shadow:0 12px 48px rgba(0,0,0,.35);overflow:hidden;
+  animation:smurFadeIn .18s ease;max-height:90vh;display:flex;flex-direction:column
+}
+.resume-modal-hd{
+  background:linear-gradient(135deg,#1b3a6b,#2d5aa0);color:#fff;
+  padding:13px 18px;display:flex;align-items:center;justify-content:space-between;
+  border-bottom:3px solid #e8b400;flex-shrink:0
+}
+.resume-modal-hd .ttl{font-size:13px;font-weight:700;letter-spacing:.8px;text-transform:uppercase}
+.resume-modal-hd button{background:rgba(255,255,255,.15);border:1px solid rgba(255,255,255,.4);color:#fff;border-radius:50%;width:28px;height:28px;font-size:16px;cursor:pointer;display:flex;align-items:center;justify-content:center}
+.resume-modal-hd button:hover{background:rgba(255,255,255,.3)}
+.resume-modal-body{padding:16px;overflow-y:auto;flex:1}
+.resume-text{font-family:'Courier New',monospace;font-size:12px;line-height:1.75;white-space:pre-wrap;background:#f5f7fc;border:1px solid #d0d9ea;border-radius:6px;padding:12px 14px;color:#1a1a2e;max-height:400px;overflow-y:auto}
+.btn-copy{background:#2d5aa0;color:#fff;border:none;border-radius:20px;padding:7px 20px;font-size:12px;font-weight:700;cursor:pointer;margin-top:10px;display:inline-flex;align-items:center;gap:5px;transition:.15s}
+.btn-copy:hover{background:#1b3a6b}
+.btn-copy.copied{background:#2a7a3b}
+
+/* ══ Modal Carte des secteurs ════════════════════════════════════════ */
+.carte-modal-overlay{
+  display:none;position:fixed;inset:0;
+  background:rgba(10,20,50,.65);backdrop-filter:blur(3px);
+  z-index:9002;align-items:center;justify-content:center;padding:18px
+}
+.carte-modal-overlay.open{display:flex}
+.carte-modal-box{
+  background:#fff;border-radius:12px;width:100%;max-width:900px;
+  box-shadow:0 12px 48px rgba(0,0,0,.4);
+  animation:smurFadeIn .18s ease;display:flex;flex-direction:column
+}
+#carte-map{height:520px;width:100%;min-height:520px;flex-shrink:0}
+.carte-modal-hd{
+  background:linear-gradient(135deg,#1b3a6b,#2d5aa0);color:#fff;
+  padding:12px 18px;display:flex;align-items:center;justify-content:space-between;
+  border-bottom:3px solid #e8b400;flex-shrink:0
+}
+.carte-modal-hd .ttl{font-size:13px;font-weight:700;letter-spacing:.8px;text-transform:uppercase}
+.carte-modal-hd button{background:rgba(255,255,255,.15);border:1px solid rgba(255,255,255,.4);color:#fff;border-radius:50%;width:28px;height:28px;font-size:16px;cursor:pointer;display:flex;align-items:center;justify-content:center}
+.carte-modal-hd button:hover{background:rgba(255,255,255,.3)}
+.carte-modal-subhd{
+  background:#f0f4fb;border-bottom:1px solid #dde4ef;
+  padding:7px 16px;display:flex;align-items:center;gap:12px;flex-wrap:wrap;flex-shrink:0
+}
+.carte-shift-toggle{display:flex;border-radius:20px;overflow:hidden;border:1.5px solid #2d5aa0}
+.carte-shift-toggle button{
+  padding:4px 14px;font-size:11px;font-weight:700;cursor:pointer;border:none;
+  background:#fff;color:#2d5aa0;transition:.15s
+}
+.carte-shift-toggle button.active{background:#2d5aa0;color:#fff}
+.carte-legend{display:flex;flex-wrap:wrap;gap:6px;font-size:11px}
+.carte-leg-item{display:flex;align-items:center;gap:4px;font-weight:500;color:#333}
+.carte-leg-dot{width:12px;height:12px;border-radius:3px;flex-shrink:0;opacity:.75}
+/* #carte-map défini dans le bloc modal carte */
+.carte-label{background:transparent !important;border:none !important}
+.cl-inner{
+  background:rgba(255,255,255,.92);border-radius:5px;padding:3px 7px;
+  box-shadow:0 1px 4px rgba(0,0,0,.18);text-align:center;min-width:60px
+}
+.cl-sector{font-weight:800;font-size:12px;color:#1b3a6b;letter-spacing:.3px}
+.cl-ambu{font-size:10px;font-weight:600;color:#2a7a3b;margin-top:1px;white-space:nowrap;max-width:90px;overflow:hidden;text-overflow:ellipsis}
+.cl-ambu.vide{color:#aaa;font-style:italic}
+.leaflet-tooltip.carte-tip{font-size:12px;line-height:1.5;pointer-events:none}
+
+/* ══ Modal Appel Rapide ══════════════════════════════════════════════ */
+.appel-modal-overlay{display:none;position:fixed;inset:0;background:rgba(10,20,50,.65);backdrop-filter:blur(3px);z-index:9003;align-items:center;justify-content:center;padding:18px}
+.appel-modal-overlay.open{display:flex}
+.appel-modal-box{background:#f0f4fb;border-radius:12px;width:100%;max-width:860px;box-shadow:0 12px 48px rgba(0,0,0,.4);animation:smurFadeIn .18s ease;max-height:92vh;display:flex;flex-direction:column;overflow:hidden}
+.appel-modal-hd{background:linear-gradient(135deg,#1b3a6b,#2d5aa0);color:#fff;padding:12px 18px;display:flex;align-items:center;justify-content:space-between;border-bottom:3px solid #e8b400;flex-shrink:0}
+.appel-modal-hd .ttl{font-size:13px;font-weight:700;letter-spacing:.8px;text-transform:uppercase}
+.appel-modal-hd button{background:rgba(255,255,255,.15);border:1px solid rgba(255,255,255,.4);color:#fff;border-radius:50%;width:28px;height:28px;font-size:16px;cursor:pointer;display:flex;align-items:center;justify-content:center}
+.appel-modal-hd button:hover{background:rgba(255,255,255,.3)}
+.appel-modal-body{padding:14px;overflow-y:auto;flex:1}
+.appel-section-title{font-size:10.5px;font-weight:700;text-transform:uppercase;letter-spacing:.7px;color:#2d5aa0;margin:12px 0 6px;padding-left:2px}
+.appel-section-title:first-child{margin-top:0}
+.appel-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(148px,1fr));gap:8px;margin-bottom:4px}
+.appel-tile{border-radius:8px;overflow:hidden;cursor:pointer;box-shadow:0 2px 8px rgba(0,0,0,.12);transition:.15s;user-select:none}
+.appel-tile:hover{transform:translateY(-2px);box-shadow:0 5px 16px rgba(0,0,0,.22)}
+.appel-tile:active{transform:scale(.97)}
+.at-head{padding:5px 10px;font-size:9.5px;font-weight:700;text-transform:uppercase;letter-spacing:.5px;color:rgba(255,255,255,.85)}
+.at-body{background:#fff;padding:8px 10px 10px}
+.at-name{font-size:13px;font-weight:700;color:#1a1a2e;line-height:1.2;margin-bottom:5px}
+.at-dect{font-family:monospace;font-size:20px;font-weight:800;color:#2d5aa0;letter-spacing:1px}
+.at-tel{font-size:11px;font-weight:600;color:#2a7a3b;margin-top:2px}
+.at-hint{font-size:9px;color:#bbb;margin-top:5px}
+.at-copied-msg{font-size:9px;color:#2a7a3b;font-weight:700;margin-top:5px}
+.appel-empty{text-align:center;padding:36px;color:#aaa;font-size:13px}
+
+/* ══ Modal Rotation / Modèles ════════════════════════════════════════ */
+.rot-modal-overlay{display:none;position:fixed;inset:0;background:rgba(10,20,50,.65);backdrop-filter:blur(3px);z-index:9003;align-items:center;justify-content:center;padding:18px}
+.rot-modal-overlay.open{display:flex}
+.rot-modal-box{background:#fff;border-radius:12px;width:100%;max-width:660px;box-shadow:0 12px 48px rgba(0,0,0,.4);animation:smurFadeIn .18s ease;max-height:92vh;display:flex;flex-direction:column;overflow:hidden}
+.rot-modal-hd{background:linear-gradient(135deg,#1b3a6b,#2d5aa0);color:#fff;padding:12px 18px;display:flex;align-items:center;justify-content:space-between;border-bottom:3px solid #e8b400;flex-shrink:0}
+.rot-modal-hd .ttl{font-size:13px;font-weight:700;letter-spacing:.8px;text-transform:uppercase}
+.rot-modal-hd button{background:rgba(255,255,255,.15);border:1px solid rgba(255,255,255,.4);color:#fff;border-radius:50%;width:28px;height:28px;font-size:16px;cursor:pointer;display:flex;align-items:center;justify-content:center}
+.rot-modal-hd button:hover{background:rgba(255,255,255,.3)}
+.rot-tabs{display:flex;border-bottom:2px solid #dde4ef;flex-shrink:0;background:#f7f9fd}
+.rot-tab{flex:1;padding:9px;text-align:center;font-size:12px;font-weight:700;cursor:pointer;color:#666;border-bottom:3px solid transparent;margin-bottom:-2px;transition:.15s}
+.rot-tab.active{color:#2d5aa0;border-bottom-color:#2d5aa0;background:#fff}
+.rot-body{padding:14px;overflow-y:auto;flex:1}
+.rot-tab-content{display:none}.rot-tab-content.active{display:block}
+.rot-save-bar{display:flex;gap:8px;margin-bottom:14px;align-items:center}
+.rot-save-bar input{flex:1;border:1.5px solid #d0d9ea;border-radius:6px;padding:6px 10px;font-size:12px;outline:none}
+.rot-save-bar input:focus{border-color:#2d5aa0}
+.rot-save-btn{background:#2d5aa0;color:#fff;border:none;border-radius:6px;padding:6px 14px;font-size:12px;font-weight:700;cursor:pointer;white-space:nowrap}
+.rot-save-btn:hover{background:#1b3a6b}
+.tpl-item{display:flex;align-items:center;gap:8px;padding:8px 10px;border-radius:6px;border:1px solid #dde4ef;margin-bottom:7px;background:#f7f9fd}
+.tpl-name{flex:1;font-weight:700;font-size:12.5px;color:#1a1a2e}
+.tpl-date{font-size:10px;color:#999;margin-right:4px}
+.tpl-apply{background:#2d5aa0;color:#fff;border:none;border-radius:12px;padding:3px 11px;font-size:11px;font-weight:700;cursor:pointer}
+.tpl-apply:hover{background:#1b3a6b}
+.tpl-del{background:none;border:none;color:#ccc;font-size:17px;cursor:pointer;line-height:1;padding:0 2px}
+.tpl-del:hover{color:#b82222}
+.rot-toggle-wrap{display:flex;align-items:center;gap:10px;margin-bottom:14px;padding:10px 12px;background:#f0f4fb;border-radius:8px;border:1px solid #dde4ef}
+.rot-toggle-lbl{font-size:12.5px;font-weight:600;color:#1b3a6b;flex:1}
+.rot-toggle{position:relative;width:40px;height:22px;flex-shrink:0}
+.rot-toggle input{opacity:0;width:0;height:0}
+.rot-slider{position:absolute;inset:0;background:#ccc;border-radius:11px;cursor:pointer;transition:.25s}
+.rot-slider:before{content:'';position:absolute;height:16px;width:16px;left:3px;bottom:3px;background:#fff;border-radius:50%;transition:.25s}
+.rot-toggle input:checked + .rot-slider{background:#2d5aa0}
+.rot-toggle input:checked + .rot-slider:before{transform:translateX(18px)}
+.rot-table{width:100%;border-collapse:collapse;font-size:12.5px}
+.rot-table th{background:#e9eef6;color:#2d5aa0;font-size:10.5px;font-weight:700;text-transform:uppercase;padding:6px 10px;border-bottom:1px solid #d0d9ea;text-align:left}
+.rot-table td{padding:6px 8px;border-bottom:1px solid #f0f2f5;vertical-align:middle}
+.rot-table tr:last-child td{border-bottom:none}
+.rot-today-row td{background:#fffbeb;font-weight:700;color:#856404}
+.rot-auto-banner{background:#d4edda;border:1px solid #a8d5b5;border-radius:6px;padding:8px 12px;font-size:12px;font-weight:600;color:#1e6b35;margin-bottom:10px;display:none}
+body.dark .tpl-item{background:#1c2333;border-color:#30363d}
+body.dark .tpl-name{color:#c9d1d9}
+body.dark .rot-toggle-wrap{background:#1c2333;border-color:#30363d}
+body.dark .rot-modal-box,.dark .appel-modal-box{background:#161b22}
+body.dark .rot-tabs{background:#1c2333;border-color:#30363d}
+body.dark .rot-tab{color:#8b949e}
+body.dark .rot-tab.active{color:#79b8ff;background:#161b22;border-bottom-color:#79b8ff}
+body.dark .rot-body{background:#161b22}
+body.dark .rot-table th{background:#1c2333;color:#79b8ff;border-color:#30363d}
+body.dark .rot-table td{border-color:#21262d}
+body.dark .rot-today-row td{background:#1c200d;color:#e8b400}
+body.dark .rot-save-bar input{background:#1c2333;border-color:#30363d;color:#c9d1d9}
+body.dark .appel-modal-box{background:#1c2333}
+body.dark .at-body{background:#161b22}
+body.dark .at-name{color:#c9d1d9}
+body.dark .at-dect{color:#79b8ff}
+
+/* ── Print ── */
+@media print{
+  body{background:#fff;padding:0}
+  .page{box-shadow:none;border-radius:0}
+  .save-bar,.ref-section{display:none!important}
+  .main-grid{background:#fff}
+  .card{box-shadow:none;border:1px solid #ddd}
+  select,input[type=text]{border:none;padding:1px;font-size:12px;background:transparent}
+}
+</style>
+</head>
+<body>
+<div class="page">
+
+<!-- ═══ HEADER ════════════════════ -->
+<div class="page-header">
+  <div class="ttl">Tableau de Garde — Hôpital</div>
+  <div class="sub"></div>
+  <div id="header-date-long" style="font-size:25px;font-weight:600;color:rgba(255,255,255,.85);margin-top:4px"></div>
+</div>
+
+<!-- ═══ BARRE DE PROGRESSION ════════════════════════════════════════ -->
+<div class="garde-prog-wrap">
+  <div class="garde-clock-block">
+    <div class="garde-clock" id="garde-clock">--:--</div>
+    <div class="garde-clock-lbl" id="garde-date-long" style="font-size:10px;letter-spacing:.3px;text-transform:capitalize">—</div>
+  </div>
+  <div class="garde-shift-wrap">
+    <div class="garde-shift-hd">
+      <span class="garde-shift-title" id="prog-jour-title">☀️ Garde Jour — 8h à 20h</span>
+      <span class="garde-shift-stat" id="prog-jour-stat">—</span>
+    </div>
+    <div class="garde-track"><div class="garde-fill" id="prog-jour-fill" style="width:0%"></div></div>
+  </div>
+  <div class="garde-shift-wrap">
+    <div class="garde-shift-hd">
+      <span class="garde-shift-title" id="prog-nuit-title">🌙 Garde Nuit — 20h à 8h</span>
+      <span class="garde-shift-stat" id="prog-nuit-stat">—</span>
+    </div>
+    <div class="garde-track"><div class="garde-fill" id="prog-nuit-fill" style="width:0%"></div></div>
+  </div>
+</div>
+
+<!-- ═══ SAVE BAR ══════════════════ -->
+<div class="save-bar">
+  <button class="btn-save" onclick="saveAll()">💾 Enregistrer</button>
+  <button class="btn-reset" onclick="resetAll()">↺ Réinitialiser</button>
+  <button class="btn-ref" onclick="toggleRef()">📋 Listes de référence</button>
+  <button class="btn-resume" onclick="openResume()">📄 Résumé garde</button>
+  <button class="btn-carte" onclick="openCarte()" style="background:#fff;color:#1a6b6b;border:1.5px solid #1a6b6b!important;display:inline-flex;align-items:center;gap:4px;padding:5px 13px;border-radius:20px;font-size:12px;font-weight:700;cursor:pointer;transition:.15s">🗺️ Carte secteurs</button>
+  <button onclick="openAppelRapide()" style="background:#fff;color:#b82222;border:1.5px solid #b82222!important;display:inline-flex;align-items:center;gap:4px;padding:5px 13px;border-radius:20px;font-size:12px;font-weight:700;cursor:pointer;transition:.15s">📟 Appel rapide</button>
+  <button onclick="openRotation()" style="background:#fff;color:#7c3fa0;border:1.5px solid #7c3fa0!important;display:inline-flex;align-items:center;gap:4px;padding:5px 13px;border-radius:20px;font-size:12px;font-weight:700;cursor:pointer;transition:.15s">🔄 Modèles & Rotation</button>
+  <button class="btn-dark" id="btn-dark" onclick="toggleDark()">🌙 Mode sombre</button>
+  <button class="btn-aide" onclick="openAide()">❓ Aide</button>
+  <span class="save-status" id="save-status">✔ Sauvegardé</span>
+</div>
+
+<!-- ═══ MAIN GRID ════════════════════════════════════════════════════ -->
+<div class="main-grid">
+
+  <!-- ══ COLONNE GAUCHE — LECTURE SEULE ════════════════════════════ -->
+  <div class="col col-left">
+
+    <!-- Infos fixes -->
+    <div class="card">
+      <div class="ch ch-slate">📞 Infos fixes (DECT)</div>
+      <table>
+        <thead><tr><th>Libellé</th><th style="text-align:right">DECT</th></tr></thead>
+        <tbody>
+          <tr><td class="rl">IOA Jour</td><td style="text-align:right"><span class="stat-dect">7658</span></td></tr>
+          <tr><td class="rl">IOA Nuit</td><td style="text-align:right"><span class="stat-dect">7659</span></td></tr>
+          <tr><td class="rl">Cardiologie</td><td style="text-align:right"><span class="stat-dect">12703</span></td></tr>
+          <tr><td class="rl">Neuro-Vasculaire</td><td style="text-align:right"><span class="stat-dect">12676</span></td></tr>
+          <tr><td class="rl">Pédiatrie</td><td style="text-align:right"><span class="stat-dect">7665</span></td></tr>
+          <tr><td class="rl">Radiologue</td><td style="text-align:right"><span class="stat-dect">9</span></td></tr>
+          <tr><td class="rl">Réanimation</td><td style="text-align:right"><span class="stat-dect">7447</span></td></tr>
+        </tbody>
+      </table>
+    </div>
+
+    <!-- SMUR Primaire résumé -->
+    <div class="card">
+      <div class="ch ch-blue">🚑 SMUR Primaire</div>
+      <div class="smur-sum-row"><span class="ss-lbl">Médecin</span><span class="badge bj" id="ls-sp-med-j">J —</span><span class="badge bn" id="ls-sp-med-n">N —</span></div>
+      <div class="smur-sum-row"><span class="ss-lbl">IDE</span><span class="badge bj" id="ls-sp-ide-j">J —</span><span class="badge bn" id="ls-sp-ide-n">N —</span></div>
+      <div class="smur-sum-row brd0"><span class="ss-lbl">Ambulancier</span><span class="badge bj" id="ls-sp-ambu-j">J —</span><span class="badge bn" id="ls-sp-ambu-n">N —</span></div>
+      <div class="nz" id="sp-ptable"></div>
+    </div>
+
+    <!-- SMUR Secondaire résumé -->
+    <div class="card">
+      <div class="ch ch-blue">🚑 SMUR Secondaire</div>
+      <div class="smur-sum-row"><span class="ss-lbl">Médecin</span><span class="badge bj" id="ls-ss-med-j">J —</span><span class="badge bn" id="ls-ss-med-n">N —</span></div>
+      <div class="smur-sum-row"><span class="ss-lbl">IDE</span><span class="badge bj" id="ls-ss-ide-j">J —</span><span class="badge bn" id="ls-ss-ide-n">N —</span></div>
+      <div class="smur-sum-row brd0"><span class="ss-lbl">Ambulancier</span><span class="badge bj" id="ls-ss-ambu-j">J —</span><span class="badge bn" id="ls-ss-ambu-n">N —</span></div>
+      <div class="nz"><a href="#" onclick="openSmurModal();return false;" style="color:#2d5aa0;font-size:11px;font-weight:600;text-decoration:none">➜ Organisation SMUR</a></div>
+    </div>
+
+  </div><!-- /col-left -->
+
+  <!-- ══ COLONNE CENTRE — SAISIE ════════════════════════════════════ -->
+  <div class="col col-center">
+
+    <div class="two-col">
+      <!-- SMUR Primaire -->
+      <div class="card">
+        <div class="ch ch-blue" style="text-align:center">SMUR Primaire</div>
+        <table>
+          <thead><tr><th>Libellé</th><th>Nom</th><th>DECT J</th><th>DECT N</th><th>📱 Portable</th></tr></thead>
+          <tbody>
+            <tr>
+              <td class="rl">Médecin</td>
+              <td><select class="sel-med" data-field="sp-med-nom"></select></td>
+              <td><span class="badge bj" id="cfg-sp-med-j">J —</span></td>
+              <td><span class="badge bn" id="cfg-sp-med-n">N —</span></td>
+              <td><input type="text" class="inp-tel" data-field="sp-med-tel" placeholder="06…" onchange="onPortableChange()"/></td>
+            </tr>
+            <tr>
+              <td class="rl">IDE</td>
+              <td><select class="sel-ide" data-field="sp-ide-nom"></select></td>
+              <td><span class="badge bj" id="cfg-sp-ide-j">J —</span></td>
+              <td><span class="badge bn" id="cfg-sp-ide-n">N —</span></td>
+              <td><input type="text" class="inp-tel" data-field="sp-ide-tel" placeholder="06…" onchange="onPortableChange()"/></td>
+            </tr>
+            <tr>
+              <td class="rl">Ambulancier</td>
+              <td><select class="sel-amb" data-field="sp-ambu-nom"></select></td>
+              <td><span class="badge bj" id="cfg-sp-ambu-j">J —</span></td>
+              <td><span class="badge bn" id="cfg-sp-ambu-n">N —</span></td>
+              <td><input type="text" class="inp-tel" data-field="sp-ambu-tel" placeholder="06…" onchange="onPortableChange()"/></td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+
+      <!-- SMUR Secondaire -->
+      <div class="card">
+        <div class="ch ch-blue" style="text-align:center">SMUR Secondaire</div>
+        <table>
+          <thead><tr><th>Libellé</th><th>Nom</th><th>DECT J</th><th>DECT N</th><th>📱 Portable</th></tr></thead>
+          <tbody>
+            <tr>
+              <td class="rl">Médecin</td>
+              <td><select class="sel-med" data-field="ss-med-nom"></select></td>
+              <td><span class="badge bj" id="cfg-ss-med-j">J —</span></td>
+              <td><span class="badge bn" id="cfg-ss-med-n">N —</span></td>
+              <td><input type="text" class="inp-tel" data-field="ss-med-tel" placeholder="06…" onchange="onPortableChange()"/></td>
+            </tr>
+            <tr>
+              <td class="rl">IDE</td>
+              <td><select class="sel-ide" data-field="ss-ide-nom"></select></td>
+              <td><span class="badge bj" id="cfg-ss-ide-j">J —</span></td>
+              <td><span class="badge bn" id="cfg-ss-ide-n">N —</span></td>
+              <td><input type="text" class="inp-tel" data-field="ss-ide-tel" placeholder="06…" onchange="onPortableChange()"/></td>
+            </tr>
+            <tr>
+              <td class="rl">Ambulancier</td>
+              <td><select class="sel-amb" data-field="ss-ambu-nom"></select></td>
+              <td><span class="badge bj" id="cfg-ss-ambu-j">J —</span></td>
+              <td><span class="badge bn" id="cfg-ss-ambu-n">N —</span></td>
+              <td><input type="text" class="inp-tel" data-field="ss-ambu-tel" placeholder="06…" onchange="onPortableChange()"/></td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+
+    <!-- Régulateurs -->
+    <div class="two-col">
+      <div class="card">
+        <div class="ch ch-green" style="text-align:center">Régulateurs — Jour</div>
+        <table>
+          <thead><tr><th>MRU</th><th>Nom</th><th>DECT</th></tr></thead>
+          <tbody>
+            <tr><td><span class="badge bm">J1</span></td><td><select class="sel-reg" data-field="regj1-nom"></select></td><td><input type="text" class="inp-sm" data-field="regj1-dect" placeholder="DECT"/></td></tr>
+            <tr><td><span class="badge bm">J2</span></td><td><select class="sel-reg" data-field="regj2-nom"></select></td><td><input type="text" class="inp-sm" data-field="regj2-dect" placeholder="DECT"/></td></tr>
+          </tbody>
+        </table>
+      </div>
+      <div class="card">
+        <div class="ch ch-navy" style="text-align:center">Régulateurs — Nuit</div>
+        <table>
+          <thead><tr><th>MRU</th><th>Nom</th><th>DECT</th></tr></thead>
+          <tbody>
+            <tr><td><span class="badge bm">N1</span></td><td><select class="sel-reg" data-field="regn1-nom"></select></td><td><input type="text" class="inp-sm" data-field="regn1-dect" placeholder="DECT"/></td></tr>
+            <tr><td><span class="badge bm">N2</span></td><td><select class="sel-reg" data-field="regn2-nom"></select></td><td><input type="text" class="inp-sm" data-field="regn2-dect" placeholder="DECT"/></td></tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+
+    <!-- Ambulances Jour -->
+    <div class="card">
+      <div class="ch ch-green" style="text-align:center;padding:9px 10px">🌤️ &nbsp;Ambulances de Garde — Jour</div>
+      <table>
+        <thead><tr><th style="width:52px">Secteur</th><th>Ambulance</th><th>Téléphone</th></tr></thead>
+        <tbody>
+          <tr><td class="sid">B1</td><td><select class="sel-achb" data-field="aj-b1"></select></td><td><input type="text" class="inp-tel" data-field="aj-b1-tel" placeholder="Base ou 06…"/></td></tr>
+          <tr><td class="sid">B2</td><td><select class="sel-achb" data-field="aj-b2"></select></td><td><input type="text" class="inp-tel" data-field="aj-b2-tel" placeholder="Base ou 06…"/></td></tr>
+          <tr><td class="sid">B3</td><td><select class="sel-achb" data-field="aj-b3"></select></td><td><input type="text" class="inp-tel" data-field="aj-b3-tel" placeholder="Base ou 06…"/></td></tr>
+          <tr><td class="sid">VZ</td><td><select class="sel-avz" data-field="aj-vz"></select></td><td><input type="text" class="inp-tel" data-field="aj-vz-tel" placeholder="Base ou 06…"/></td></tr>
+          <tr><td class="sid">St Amd</td><td><select class="sel-astam" data-field="aj-stam"></select></td><td><input type="text" class="inp-tel" data-field="aj-stam-tel" placeholder="Base ou 06…"/></td></tr>
+          <tr><td class="sid">Nord</td><td><select class="sel-anord" data-field="aj-nord"></select></td><td><input type="text" class="inp-tel" data-field="aj-nord-tel" placeholder="Base ou 06…"/></td></tr>
+          <tr><td class="sid">Est</td><td><select class="sel-aest" data-field="aj-est"></select></td><td><input type="text" class="inp-tel" data-field="aj-est-tel" placeholder="Base ou 06…"/></td></tr>
+        </tbody>
+      </table>
+    </div>
+
+    <!-- Ambulances Nuit -->
+    <div class="card">
+      <div class="ch ch-red" style="text-align:center;padding:9px 10px">🌙 &nbsp;Ambulances de Garde — Nuit</div>
+      <table>
+        <thead><tr><th style="width:52px">Secteur</th><th>Ambulance</th><th>Téléphone</th></tr></thead>
+        <tbody>
+          <tr><td class="sid">B1</td><td><select class="sel-achb" data-field="an-b1"></select></td><td><input type="text" class="inp-tel" data-field="an-b1-tel" placeholder="Base ou 06…"/></td></tr>
+          <tr><td class="sid">B2</td><td><select class="sel-achb" data-field="an-b2"></select></td><td><input type="text" class="inp-tel" data-field="an-b2-tel" placeholder="Base ou 06…"/></td></tr>
+         
+          <tr><td class="sid">VZ</td><td><select class="sel-avz" data-field="an-vz"></select></td><td><input type="text" class="inp-tel" data-field="an-vz-tel" placeholder="Base ou 06…"/></td></tr>
+          <tr><td class="sid">St Amd</td><td><select class="sel-astam" data-field="an-stam"></select></td><td><input type="text" class="inp-tel" data-field="an-stam-tel" placeholder="Base ou 06…"/></td></tr>
+          
+        </tbody>
+      </table>
+    </div>
+
+  </div><!-- /col-center -->
+
+  <!-- ══ COLONNE DROITE ════════════════════════════════════════════ -->
+  <div class="col col-right">
+
+    <div class="card">
+      <div class="ch ch-teal" style="font-size:10px">Médecin Régulateur Libéral</div>
+      <div class="num-row"><span class="num-idx">1</span><select class="sel-rl" data-field="mrl1" style="flex:1"></select></div>
+      <div class="num-row"><span class="num-idx">2</span><select class="sel-rl" data-field="mrl2" style="flex:1"></select></div>
+    </div>
+
+    <div class="card">
+      <div class="ch ch-slate">Administrateur de Garde</div>
+      <div style="padding:7px 10px"><select class="sel-dir" data-field="admin-garde" style="width:100%"></select></div>
+    </div>
+
+    <div class="card">
+      <div class="ch ch-blue">Ambulance de Sortie</div>
+      <table>
+        <thead><tr><th>Ambulance</th><th>Téléphone</th></tr></thead>
+        <tbody><tr>
+          <td><select class="sel-achb" data-field="ambu-sortie"></select></td>
+          <td><input type="text" class="inp-tel" data-field="ambu-sortie-tel" placeholder="Téléphone…"/></td>
+        </tr></tbody>
+      </table>
+    </div>
+
+    <div class="card">
+      <div class="ch ch-navy">Ambulance de GHT</div>
+      <table>
+        <thead><tr><th>Ambulance</th><th>Téléphone</th></tr></thead>
+        <tbody><tr>
+          <td><select class="sel-achb" data-field="ambu-ght"></select></td>
+          <td><input type="text" class="inp-tel" data-field="ambu-ght-tel" placeholder="Téléphone…"/></td>
+        </tr></tbody>
+      </table>
+    </div>
+
+    <div class="card">
+      <div class="ch ch-green" style="display:flex;justify-content:space-between;align-items:center">
+        <span>Pharmacie de Garde</span>
+        <a href="https://www.resogardes.com/index.php" target="_blank" rel="noopener" title="Trouver une pharmacie de garde en ligne" style="background:rgba(255,255,255,.22);color:#fff;border:1px solid rgba(255,255,255,.5);border-radius:10px;padding:2px 8px;font-size:10px;font-weight:700;text-decoration:none;white-space:nowrap;transition:.15s" onmouseover="this.style.background='rgba(255,255,255,.38)'" onmouseout="this.style.background='rgba(255,255,255,.22)'">🌐 Site officiel</a>
+      </div>
+      <div style="padding:6px 8px 8px">
+        <select id="pharm-zone" onchange="renderPharmGarde()" style="width:100%;margin-bottom:5px">
+          <option value="bourges">Bourges</option>
+          <option value="vierzon">Vierzon</option>
+          <option value="stam">St-Amand-M.</option>
+        </select>
+        <div id="pharm-garde-list" class="pharm-garde-list"></div>
+      </div>
+    </div>
+
+    <div class="card">
+      <div class="ch ch-amber">📝 Notes du jour</div>
+      <div style="padding:6px 8px">
+        <textarea data-field="notes-jour" style="width:100%;height:78px;border:1px solid #d0d9ea;border-radius:5px;padding:6px;font-size:12px;font-family:inherit;resize:vertical;outline:none" placeholder="Notes, informations…"></textarea>
+      </div>
+    </div>
+
+    <div class="card" style="text-align:center;padding:4px 0">
+      <a href="#" class="action-btn ab-retour">
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="15 18 9 12 15 6"/></svg>
+        Retour
+      </a>
+    </div>
+
+  </div><!-- /col-right -->
+</div><!-- /main-grid -->
+
+<!-- ═══ LISTES DE RÉFÉRENCE — ÉDITABLES ══════════════════════════════ -->
+<div class="ref-section" id="ref-section" style="display:none">
+  <div class="ref-section-title">📋 Listes de référence — éditables</div>
+  <p style="font-size:11.5px;color:#666;margin-bottom:12px">
+    Modifiez les listes ci-dessous : les menus déroulants du tableau se mettront à jour automatiquement. Cliquez sur un nom ou un DECT pour l'éditer, <strong>+</strong> pour ajouter, <strong>×</strong> pour supprimer.
+  </p>
+
+  <div class="ref-grid">
+
+    <!-- Régulateurs -->
+    <div class="ref-card">
+      <div class="ch ch-blue">Régulateurs <button class="add-btn" onclick="addEntry('regulateurs')">+ Ajouter</button></div>
+      <div class="ref-list-edit" id="refl-regulateurs"></div>
+    </div>
+    <div class="ref-card">
+      <div class="ch ch-teal">Médecins Régulateurs Libéraux <button class="add-btn" onclick="addEntry('regLiberal')">+ Ajouter</button></div>
+      <div class="ref-list-edit" id="refl-regLiberal"></div>
+    </div>
+
+    <!-- Médecins de garde SMUR -->
+    <div class="ref-card">
+      <div class="ch ch-navy">Médecins de garde (SMUR) <button class="add-btn" onclick="addEntry('medGardes')">+ Ajouter</button></div>
+      <div class="ref-list-edit" id="refl-medGardes"></div>
+    </div>
+
+    <!-- IDE -->
+    <div class="ref-card">
+      <div class="ch ch-teal">IDE <button class="add-btn" onclick="addEntry('ide')">+ Ajouter</button></div>
+      <div class="ref-list-edit" id="refl-ide"></div>
+    </div>
+
+    <!-- Ambulanciers -->
+    <div class="ref-card">
+      <div class="ch ch-slate">Ambulanciers <button class="add-btn" onclick="addEntry('ambulanciers')">+ Ajouter</button></div>
+      <div class="ref-list-edit" id="refl-ambulanciers"></div>
+    </div>
+
+    <!-- Ambulances CHB -->
+    <div class="ref-card">
+      <div class="ch ch-green">Ambulances CHB <button class="add-btn" onclick="addEntry('ambu_chb')">+ Ajouter</button></div>
+      <div class="ref-list-edit" id="refl-ambu_chb"></div>
+    </div>
+    <div class="ref-card">
+      <div class="ch ch-blue">Ambulances Bourges <button class="add-btn" onclick="addEntry('ambu_bourges')">+ Ajouter</button></div>
+      <div class="ref-list-edit" id="refl-ambu_bourges"></div>
+    </div>
+
+    <!-- Ambulances VZ -->
+    <div class="ref-card">
+      <div class="ch ch-blue">Ambulances VZ <button class="add-btn" onclick="addEntry('ambu_vz')">+ Ajouter</button></div>
+      <div class="ref-list-edit" id="refl-ambu_vz"></div>
+    </div>
+
+    <!-- Ambulances St Amand -->
+    <div class="ref-card">
+      <div class="ch ch-blue">Ambulances St-Amand <button class="add-btn" onclick="addEntry('ambu_stam')">+ Ajouter</button></div>
+      <div class="ref-list-edit" id="refl-ambu_stam"></div>
+    </div>
+
+    <!-- Ambulances Nord / Est / Sud -->
+    <div class="ref-card">
+      <div class="ch ch-blue">Ambulances Nord <button class="add-btn" onclick="addEntry('ambu_nord')">+ Ajouter</button></div>
+      <div class="ref-list-edit" id="refl-ambu_nord"></div>
+    </div>
+    <div class="ref-card">
+      <div class="ch ch-blue">Ambulances Est <button class="add-btn" onclick="addEntry('ambu_est')">+ Ajouter</button></div>
+      <div class="ref-list-edit" id="refl-ambu_est"></div>
+    </div>
+
+    <!-- Directeurs -->
+    <div class="ref-card">
+      <div class="ch ch-amber">Directeurs / Cadres <button class="add-btn" onclick="addEntry('directeurs')">+ Ajouter</button></div>
+      <div class="ref-list-edit" id="refl-directeurs"></div>
+    </div>
+
+    <!-- Config SMUR DECT -->
+    <div class="ref-card">
+      <div class="ch ch-slate">⚙️ Configuration DECT SMUR</div>
+      <div class="smur-cfg">
+        <table>
+          <thead><tr><th>Poste</th><th>DECT Jour</th><th>DECT Nuit</th></tr></thead>
+          <tbody>
+            <tr><td><label>SP Médecin</label></td><td><input id="dect-sp-med-j" onchange="saveDect()"/></td><td><input id="dect-sp-med-n" onchange="saveDect()"/></td></tr>
+            <tr><td><label>SP IDE</label></td><td><input id="dect-sp-ide-j" onchange="saveDect()"/></td><td><input id="dect-sp-ide-n" onchange="saveDect()"/></td></tr>
+            <tr><td><label>SP Ambulancier</label></td><td><input id="dect-sp-ambu-j" onchange="saveDect()"/></td><td><input id="dect-sp-ambu-n" onchange="saveDect()"/></td></tr>
+            <tr><td><label>SS Médecin</label></td><td><input id="dect-ss-med-j" onchange="saveDect()"/></td><td><input id="dect-ss-med-n" onchange="saveDect()"/></td></tr>
+            <tr><td><label>SS IDE</label></td><td><input id="dect-ss-ide-j" onchange="saveDect()"/></td><td><input id="dect-ss-ide-n" onchange="saveDect()"/></td></tr>
+            <tr><td><label>SS Ambulancier</label></td><td><input id="dect-ss-ambu-j" onchange="saveDect()"/></td><td><input id="dect-ss-ambu-n" onchange="saveDect()"/></td></tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+
+    <!-- Cardiologues (lecture seule) -->
+    <div class="ref-card">
+      <div class="ch ch-red">Cardiologues</div>
+      <div class="pharm-list" id="ref-cardio"></div>
+    </div>
+
+    <!-- Réanimateurs -->
+    <div class="ref-card">
+      <div class="ch ch-navy">Réanimateurs / Anesthésistes</div>
+      <div class="pharm-list" id="ref-rea"></div>
+    </div>
+
+    <!-- Pharmacies Bourges -->
+    <div class="ref-card">
+      <div class="ch ch-green">Pharmacies de Bourges</div>
+      <div class="pharm-list" id="ref-pharm-bourges"></div>
+    </div>
+
+    <!-- Pharmacies Vierzon -->
+    <div class="ref-card">
+      <div class="ch ch-green">Pharmacies de Vierzon</div>
+      <div class="pharm-list" id="ref-pharm-vierzon"></div>
+    </div>
+
+    <!-- Pharmacies St Amand -->
+    <div class="ref-card">
+      <div class="ch ch-green">Pharmacies de St-Amand</div>
+      <div class="pharm-list" id="ref-pharm-stam"></div>
+    </div>
+
+  </div>
+</div>
+
+<div class="page-footer">Tableau de Garde — Usage interne — ©Matéo CALLÉJA 2026  </div>
+</div><!-- /page -->
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.min.js"></script>
+<!-- ═══ SCRIPT ═══════════════════════════════════════════════════════ -->
+<script>
+/* ═══════════════════════ DEFAULT DATA ════════════════════════════════ */
+const DEF_LISTS_VERSION = "2026-v2";
+const DEF_LISTS = {
+  regulateurs:[
+    {nom:"Dr Agbessi",dect:"7886"},{nom:"Dr Arar",dect:"8216"},{nom:"Dr Belghalem",dect:""},
+    {nom:"Dr Campet",dect:""},{nom:"Dr Carlos",dect:"6497"},
+    {nom:"Dr Chomono",dect:""},{nom:"Dr Cochonneau",dect:"7895"},
+    {nom:"Dr Dechery",dect:"7309"},{nom:"Dr Dorion",dect:"7313"},{nom:"Dr Gonzales de Linares",dect:""},
+    {nom:"Dr Hibon Ricard",dect:""},{nom:"Dr Mazuir",dect:"7366"},
+    {nom:"Dr Michel",dect:""},
+    {nom:"Dr Mirat",dect:""},{nom:"Dr Nasalan",dect:"7320"},{nom:"Dr Nuskowski",dect:""},
+    {nom:"Dr Paris",dect:""},{nom:"Dr Rabec",dect:""},{nom:"Dr Shehata",dect:""},
+    {nom:"Dr Santiago",dect:""},{nom:"Dr Sokpoh",dect:""},{nom:"Dr Gellert",dect:""}
+  ],
+  medGardes:[
+    {nom:"Dr Allahi",dect:"7863"},{nom:"Dr Atmani",dect:"7602"},{nom:"Dr Bationo",dect:"6382"},
+    {nom:"Dr Berraghda",dect:"7638"},{nom:"Dr Bouakline",dect:"7546"},{nom:"Dr Carlos",dect:"6497"},
+    {nom:"Dr Chelab",dect:"8218"},{nom:"Dr Cochonneau",dect:"7895"},{nom:"Dr Debbi",dect:"8217"},
+    {nom:"Dr Dechery",dect:"7309"},{nom:"Dr Dembele",dect:"7596"},{nom:"Dr Djouad",dect:"7875"},
+    {nom:"Dr Dorion",dect:"7313"},{nom:"Dr Hachemi",dect:"8220"},{nom:"Dr Henri",dect:"7947"},
+    {nom:"Dr Jegham",dect:"7525"},{nom:"Dr Joseph",dect:"7550"},{nom:"Dr Mazuir",dect:"7366"},
+    {nom:"Dr Mirat",dect:"7855"},{nom:"Dr Mouquet",dect:"7896"},{nom:"Dr Mrabet",dect:"7948"},
+    {nom:"Dr Mutamba",dect:"7442"},{nom:"Dr Nasalan",dect:"7320"},{nom:"Dr Nghemkap",dect:"7876"},
+    {nom:"Dr Naengu",dect:"7838"},{nom:"Dr Rakatonanahary",dect:"7949"},{nom:"Dr Razakamaharavo",dect:"8230"},
+    {nom:"Dr Selatni",dect:"7302"},{nom:"Dr Slimane",dect:"7394"},{nom:"Dr Zo Razakamaharavo",dect:"7524"},
+    {nom:"Dr Zongo",dect:"7521"},{nom:"Dr Gellert",dect:""}
+  ],
+  regLiberal:[
+    {nom:"Dr Bergeret",dect:""},{nom:"Dr Dion",dect:""},{nom:"Dr Dubreuil",dect:""},
+    {nom:"Dr Halbardier",dect:""},{nom:"Dr Lecocq",dect:""},{nom:"Dr Lestrade",dect:""},
+    {nom:"Dr Macet",dect:""},{nom:"Dr Merle",dect:""},{nom:"Dr Meurillon",dect:""},
+    {nom:"Dr Plisson",dect:""},{nom:"Dr Rube",dect:""},{nom:"Dr Saudeau",dect:""},
+    {nom:"Dr Steiger",dect:""},{nom:"Dr Touzet",dect:""},{nom:"Dr Vincent",dect:""},
+    {nom:"Dr Vincenti",dect:""}
+  ],
+  ide:[
+    {nom:"Romane",dect:""},{nom:"Lucie",dect:""},{nom:"Aurélie",dect:""},{nom:"Charlène",dect:""},
+    {nom:"Charline",dect:""},{nom:"Agnès",dect:""},{nom:"Elise",dect:""},{nom:"Arnaud",dect:""},
+    {nom:"Jean-Philippe",dect:""},{nom:"Marion",dect:""},{nom:"Samuel",dect:""},{nom:"Tibo",dect:""},
+    {nom:"Alice",dect:""},{nom:"Cindy",dect:""},{nom:"Fred",dect:""}
+  ],
+  ambulanciers:[
+    {nom:"Laurent",dect:""},{nom:"Jimmy",dect:""},{nom:"Sylvain",dect:""},{nom:"Davy",dect:""},
+    {nom:"Fabien",dect:""},{nom:"Jérome",dect:""},{nom:"J.Noël",dect:""},{nom:"Thierry",dect:""},
+    {nom:"Louis",dect:""},{nom:"Romain",dect:""}
+  ],
+  ambu_chb:[
+    {nom:"2000",dect:""},{nom:"André",dect:""},{nom:"Atlas",dect:""},{nom:"Avaricum",dect:""},
+    {nom:"Bengy",dect:""},{nom:"Beuze P",dect:""},{nom:"Castellois",dect:""},{nom:"Guillemin",dect:""},
+    {nom:"JHL",dect:""},{nom:"Lignières",dect:""},{nom:"Mazer",dect:""},{nom:"Millérioux",dect:""},
+    {nom:"Marquet",dect:""},{nom:"Mehun Ambulances",dect:""},{nom:"Petitjean",dect:""},
+    {nom:"Pinson",dect:""},{nom:"St Amand",dect:""},{nom:"St Exupéry",dect:""},{nom:"VMA",dect:""}
+  ],
+  ambu_bourges:[
+    {nom:"2000",dect:""},{nom:"Atlas",dect:""},{nom:"Avaricum",dect:""},
+    {nom:"Mazer",dect:""},{nom:"Pinson",dect:""},{nom:"VMA",dect:""}
+  ],
+  ambu_vz:[{nom:"André",dect:""},{nom:"Petitjean",dect:""},{nom:"St Exupéry",dect:""},{nom:"Mehun",dect:""}],
+  ambu_stam:[
+    {nom:"Beuze Prév.",dect:""},{nom:"Castellois",dect:""},{nom:"Ducreux",dect:""},{nom:"Guillemin",dect:""},
+    {nom:"Lignières",dect:""},{nom:"St Amand",dect:""},{nom:"Savignat",dect:""}
+  ],
+  ambu_nord:[{nom:"JHL",dect:""},{nom:"Marquet",dect:""},{nom:"Millérioux",dect:""}],
+  ambu_est:[{nom:"Auger",dect:""},{nom:"Bengy",dect:""},{nom:"Vallée de l'Aubois",dect:""}],
+  directeurs:[
+    {nom:"Apert Mme",dect:""},{nom:"Aulibert Mme",dect:""},{nom:"Benoist M.",dect:""},
+    {nom:"Descouts Mme",dect:""},{nom:"Dhorbait Mme",dect:""},{nom:"Fauquemburgue M.",dect:""},
+    {nom:"Halin M.",dect:""},{nom:"Hunsault M.",dect:""},{nom:"Le Heiget M.",dect:""},
+    {nom:"Le Tarnier Mme",dect:""},{nom:"Mahut M.",dect:""},{nom:"Mercier M.",dect:""},
+    {nom:"Othen Mme",dect:""},{nom:"Paoletti-Bes Mme",dect:""},{nom:"Perier Mme",dect:""},
+    {nom:"Tomatis Mme",dect:""},{nom:"Vigneron Mme",dect:""},{nom:"Vo Dinh M.",dect:""},
+    {nom:"Bignolais Mme",dect:"6433"},{nom:"Lemaire Mme",dect:"6433"},{nom:"Savignat",dect:""}
+  ]
+};
+
+const DEF_DECT = {
+  "sp-med-j":"7578","sp-med-n":"7579","sp-ide-j":"7572","sp-ide-n":"7573","sp-ambu-j":"7570","sp-ambu-n":"7571",
+  "ss-med-j":"7524","ss-med-n":"7581","ss-ide-j":"7576","ss-ide-n":"7577","ss-ambu-j":"7574","ss-ambu-n":"7575"
+};
+
+const CARDIOLOGUES = [
+  {nom:"Dr Akiel",dect:"7823"},{nom:"Dr Athmani",dect:"7602"},{nom:"Dr Breather",dect:"7822"},
+  {nom:"Dr Dechery",dect:"348/7308"},{nom:"Dr Didot",dect:"7311"},{nom:"Dr Duriez",dect:"7362"},
+  {nom:"Dr Espinosa",dect:"7085"},{nom:"Dr Gorodnilchi",dect:"8228"},{nom:"Dr Kuefdler",dect:"7329"},
+  {nom:"Dr Issa",dect:"285/7338"},{nom:"Dr Inferne",dect:"7652"},{nom:"Dr Lentini",dect:""},
+  {nom:"Dr Louthione",dect:"7834"},{nom:"Dr Guedider",dect:"7329"}
+];
+const REANIMATEURS = [
+  {nom:"Dr Anghel",dect:"7887"},{nom:"Dr Bourrou",dect:"7294"},{nom:"Dr Chabhi",dect:"7443"},
+  {nom:"Dr Chedieu",dect:"7378"},{nom:"Dr Mombo Ebobo",dect:"7610"},{nom:"Dr Mortreux",dect:"7287"},
+  {nom:"Dr Nasr",dect:""},{nom:"Dr Prevedello",dect:"6369"},{nom:"Dr Rey",dect:"7853"},
+  {nom:"Dr Raharimanana",dect:""},{nom:"Dr Vaz",dect:"6415"},{nom:"Dr Yoellmy",dect:"7399"},
+  {nom:"Dr Drishti (Anesthé.)",dect:""},{nom:"Dr Gestova (Anesthé.)",dect:""},
+  {nom:"Dr Kosateva (Anesthé.)",dect:"7347"},{nom:"Dr Molard (Anesthé.)",dect:"049"},
+  {nom:"Dr Nasr (Anesthé.)",dect:"8213"},{nom:"Dr Riecto (Anesthé.)",dect:"612"},
+  {nom:"Dr Rignault (Anesthé.)",dect:"6414"}
+];
+const PHARM_BOURGES = [
+  {nom:"Appert-Limoges",tel:"02 48 65 35 95"},{nom:"Aussière",tel:"02 48 24 44 27"},
+  {nom:"Auron (D')",tel:"02 48 24 05 39"},{nom:"Barrés",tel:"02 48 24 20 77"},
+  {nom:"Baudens",tel:"02 48 20 06 52"},{nom:"Gde Pharma Santos Dumond",tel:"02 48 20 30 69"},
+  {nom:"Berrichonne",tel:"02 48 24 02 78"},{nom:"Borderie",tel:"02 48 24 41 41"},
+  {nom:"Brunet",tel:"02 48 24 07 67"},{nom:"St Bonnet",tel:"02 48 24 04 67"},
+  {nom:"Cher",tel:"02 48 24 00 75"},{nom:"Condorcet",tel:"02 48 24 38 09"},
+  {nom:"Croix Blanche",tel:"02 48 21 16 05"},{nom:"Danions",tel:"02 48 24 02 78"},
+  {nom:"Fouassier",tel:"02 48 21 34 10"},{nom:"Gare (De la)",tel:"02 48 24 52 24"},
+  {nom:"Gibjoncs",tel:"02 48 24 38 06"},{nom:"Girard",tel:"02 48 50 06 18"},
+  {nom:"J. Cœur",tel:"02 48 21 13 15"},{nom:"Jean Baffier",tel:"02 48 20 06 52"},
+  {nom:"Mabileau",tel:"02 48 24 30 00"},{nom:"Marronniers",tel:"02 48 20 01 50"},
+  {nom:"Mathies",tel:"02 48 20 05 69"},{nom:"Paris",tel:"02 48 24 39 75"},
+  {nom:"Pipjlan (Des)",tel:"02 48 18 19 40"},{nom:"Prado",tel:"02 48 24 00 61"},
+  {nom:"Progrès (Du)",tel:"02 48 24 00 41"},{nom:"Trigona",tel:"02 48 70 83 05"},
+  {nom:"Turly",tel:"02 48 24 63 43"},{nom:"Val d'Auron",tel:"02 48 21 10 18"},
+  {nom:"Verdias",tel:"02 48 24 33 27"}
+];
+const PHARM_VIERZON = [
+  {nom:"Avenue (De l')",tel:"09 64 08 46 63"},{nom:"Ben Aicha",tel:"02 48 75 43 86"},
+  {nom:"Bouillon",tel:"02 48 75 07 94"},{nom:"Chaillet (De)",tel:"02 48 75 05 16"},
+  {nom:"Forges (Des)",tel:"02 48 75 09 34"},{nom:"Forum (Du)",tel:"02 48 83 10 14"},
+  {nom:"Henry",tel:"02 48 71 48 44"},{nom:"Nouvelle C.Com.",tel:"02 48 75 00 43"},
+  {nom:"Paul Hazard Nancy",tel:"02 48 75 25 03"},{nom:"Puits Berteau",tel:"02 48 76 07 97"},
+  {nom:"St Martin",tel:"02 48 75 37 07"}
+];
+const PHARM_STAM = [
+  {nom:"Centrale",tel:"02 48 96 01 27"},{nom:"Charenton (D.)",tel:"02 48 60 72 33"},
+  {nom:"Municipale",tel:"02 48 82 10 82"},{nom:"Gde Phie",tel:"02 48 96 00 73"},
+  {nom:"Javot",tel:"02 48 96 46 43"},{nom:"PH de la place",tel:"06 37 23 82 84"},
+  {nom:"Oval (D')",tel:"02 48 96 06 26"},{nom:"Porte Mutin",tel:"02 48 96 41 07"},
+  {nom:"Vernet",tel:"02 48 96 46 43"}
+];
+
+/* ═══════════════════════ LIVE DATA (loaded from localStorage) ════════ */
+var LISTS = JSON.parse(JSON.stringify(DEF_LISTS));
+var DECT  = JSON.parse(JSON.stringify(DEF_DECT));
+
+/* ═══════════════════════ SELECT HELPERS ══════════════════════════════ */
+function fillSelect(sel, items) {
+  var prev = sel.value;
+  sel.innerHTML = '<option value="">— Sélectionner —</option>';
+  items.forEach(function(it) {
+    var o = document.createElement('option');
+    o.value = it.nom;
+    o.textContent = it.dect ? it.nom + '  (' + it.dect + ')' : it.nom;
+    sel.appendChild(o);
+  });
+  sel.value = prev;
+}
+
+function populateAll() {
+  document.querySelectorAll('.sel-reg').forEach(function(s)      { fillSelect(s, LISTS.regulateurs); });
+  document.querySelectorAll('.sel-rl').forEach(function(s)       { fillSelect(s, LISTS.regLiberal); });
+  document.querySelectorAll('.sel-med').forEach(function(s)      { fillSelect(s, LISTS.medGardes); });
+  document.querySelectorAll('.sel-ide').forEach(function(s)      { fillSelect(s, LISTS.ide); });
+  document.querySelectorAll('.sel-amb').forEach(function(s)      { fillSelect(s, LISTS.ambulanciers); });
+  document.querySelectorAll('.sel-dir').forEach(function(s)      { fillSelect(s, LISTS.directeurs); });
+  document.querySelectorAll('.sel-achb').forEach(function(s)     { fillSelect(s, LISTS.ambu_chb); });
+  document.querySelectorAll('.sel-abourges').forEach(function(s) { fillSelect(s, LISTS.ambu_bourges); });
+  document.querySelectorAll('.sel-avz').forEach(function(s)      { fillSelect(s, LISTS.ambu_vz); });
+  document.querySelectorAll('.sel-astam').forEach(function(s)    { fillSelect(s, LISTS.ambu_stam); });
+  document.querySelectorAll('.sel-anord').forEach(function(s)    { fillSelect(s, LISTS.ambu_nord); });
+  document.querySelectorAll('.sel-aest').forEach(function(s)     { fillSelect(s, LISTS.ambu_est); });
+}
+
+/* ═══════════════════════ DECT BADGES ════════════════════════════════ */
+function applyDect() {
+  var roles = ['sp-med','sp-ide','sp-ambu','ss-med','ss-ide','ss-ambu'];
+  roles.forEach(function(r) {
+    var vj = DECT[r+'-j'] || '—';
+    var vn = DECT[r+'-n'] || '—';
+    var bj = document.getElementById('cfg-'+r+'-j');
+    var bn = document.getElementById('cfg-'+r+'-n');
+    var lj = document.getElementById('ls-'+r+'-j');
+    var ln = document.getElementById('ls-'+r+'-n');
+    if (bj) bj.textContent = 'J ' + vj;
+    if (bn) bn.textContent = 'N ' + vn;
+    if (lj) lj.textContent = 'J ' + vj;
+    if (ln) ln.textContent = 'N ' + vn;
+  });
+  // Remplir les inputs de config dans la section référence
+  Object.keys(DECT).forEach(function(k) {
+    var el = document.getElementById('dect-'+k);
+    if (el) el.value = DECT[k];
+  });
+}
+
+function saveDect() {
+  Object.keys(DECT).forEach(function(k) {
+    var el = document.getElementById('dect-'+k);
+    if (el) DECT[k] = el.value;
+  });
+  try { localStorage.setItem('garde_dect', JSON.stringify(DECT)); } catch(e) {}
+  applyDect();
+  triggerSaved();
+}
+
+/* ═══════════════════════ PORTABLE DISPLAY (résumé gauche) ═══════════ */
+function onPortableChange() {
+  updatePortableDisplay();
+  scheduleAutoSave();
+}
+
+function updatePortableDisplay() {
+  var lines = [];
+  ['sp-med','sp-ide','sp-ambu'].forEach(function(r) {
+    var nameEl = document.querySelector('[data-field="' + r + '-nom"]');
+    var telEl  = document.querySelector('[data-field="' + r + '-tel"]');
+    if (nameEl && telEl && nameEl.value && telEl.value) {
+      lines.push(nameEl.value.replace('Dr ','') + ' : <span style="color:#2a7a3b;font-weight:700">' + telEl.value + '</span>');
+    }
+  });
+  var el = document.getElementById('sp-ptable');
+  if (el) el.innerHTML = lines.join('<br>');
+}
+
+function refreshLeftDisplay() {
+  updatePortableDisplay();
+}
+
+/* ═══════════════════════ SAVE / LOAD ════════════════════════════════ */
+function saveAll() {
+  try {
+    // Sauvegarder les champs du tableau
+    var state = {};
+    document.querySelectorAll('[data-field]').forEach(function(el) {
+      state[el.dataset.field] = el.value;
+    });
+    localStorage.setItem('garde_state', JSON.stringify(state));
+    // Sauvegarder les listes
+    localStorage.setItem('garde_lists', JSON.stringify(LISTS));
+    // Sauvegarder les DECT
+    localStorage.setItem('garde_dect', JSON.stringify(DECT));
+    triggerSaved();
+  } catch(e) {
+    console.warn('Erreur sauvegarde localStorage:', e);
+  }
+}
+
+function loadState() {
+  try {
+    // Charger les listes personnalisées
+    var sl = localStorage.getItem('garde_lists');
+    if (sl) {
+      LISTS = JSON.parse(sl);
+      // Fusionner les nouveaux noms ajoutés dans DEF_LISTS avec les listes sauvegardées
+      Object.keys(DEF_LISTS).forEach(function(key) {
+        if (!LISTS[key]) { LISTS[key] = DEF_LISTS[key]; return; }
+        var existingNoms = LISTS[key].map(function(e) { return e.nom.trim().toLowerCase(); });
+        DEF_LISTS[key].forEach(function(defEntry) {
+          if (defEntry.nom && existingNoms.indexOf(defEntry.nom.trim().toLowerCase()) === -1) {
+            LISTS[key].push(defEntry);
+          }
+        });
+      });
+    }
+    // Charger la config DECT
+    var sd = localStorage.getItem('garde_dect');
+    if (sd) { DECT = JSON.parse(sd); }
+  } catch(e) { console.warn('Erreur chargement listes:', e); }
+
+  // Peupler les selects avec les listes chargées
+  populateAll();
+  applyDect();
+
+  try {
+    // Charger l'état de la garde
+    var ss = localStorage.getItem('garde_state');
+    if (ss) {
+      var state = JSON.parse(ss);
+      document.querySelectorAll('[data-field]').forEach(function(el) {
+        if (state[el.dataset.field] !== undefined && state[el.dataset.field] !== '') {
+          el.value = state[el.dataset.field];
+        }
+      });
+    }
+  } catch(e) { console.warn('Erreur chargement état:', e); }
+
+  // Date par défaut si vide
+  var dateEl = document.getElementById('garde-date');
+  if (dateEl && !dateEl.value) {
+    dateEl.value = new Date().toISOString().split('T')[0];
+  }
+  refreshLeftDisplay();
+}
+
+function resetAll() {
+  if (!confirm('Réinitialiser le tableau du jour ?\nLes listes de référence seront conservées.')) return;
+  try { localStorage.removeItem('garde_state'); } catch(e) {}
+  document.querySelectorAll('[data-field]').forEach(function(el) { el.value = ''; });
+  var dateEl = document.getElementById('garde-date');
+  if (dateEl) dateEl.value = new Date().toISOString().split('T')[0];
+  refreshLeftDisplay();
+  triggerSaved();
+}
+
+function triggerSaved() {
+  var ss = document.getElementById('save-status');
+  if (!ss) return;
+  ss.classList.add('show');
+  setTimeout(function() { ss.classList.remove('show'); }, 2200);
+}
+
+var autoSaveTimer = null;
+function scheduleAutoSave() {
+  clearTimeout(autoSaveTimer);
+  autoSaveTimer = setTimeout(saveAll, 800);
+}
+document.addEventListener('change', scheduleAutoSave);
+
+/* ═══════════════════════ REFERENCE LIST EDITOR ══════════════════════ */
+// Rendu d'une liste éditable — utilise le DOM pur (pas innerHTML) pour éviter
+// les problèmes avec les apostrophes et caractères spéciaux dans les noms
+function renderRefList(key) {
+  var container = document.getElementById('refl-' + key);
+  if (!container) return;
+  container.innerHTML = '';
+  var items = LISTS[key] || [];
+  var hasDect = items.length > 0 && Object.prototype.hasOwnProperty.call(items[0], 'dect');
+
+  items.forEach(function(item, idx) {
+    var div = document.createElement('div');
+    div.className = 'ref-entry';
+
+    // Champ nom
+    var nomInp = document.createElement('input');
+    nomInp.className = 'e-nom';
+    nomInp.type = 'text';
+    nomInp.value = item.nom || '';
+    nomInp.placeholder = 'Nom…';
+    nomInp.addEventListener('input', (function(k, i) {
+      return function() {
+        LISTS[k][i].nom = this.value;
+        populateAll();
+        scheduleAutoSave();
+      };
+    })(key, idx));
+    div.appendChild(nomInp);
+
+    // Champ DECT (si la liste en a un)
+    if (hasDect) {
+      var dectInp = document.createElement('input');
+      dectInp.className = 'e-dect';
+      dectInp.type = 'text';
+      dectInp.value = item.dect || '';
+      dectInp.placeholder = 'DECT';
+      dectInp.addEventListener('input', (function(k, i) {
+        return function() {
+          LISTS[k][i].dect = this.value;
+          populateAll();
+          scheduleAutoSave();
+        };
+      })(key, idx));
+      div.appendChild(dectInp);
+    }
+
+    // Bouton supprimer
+    var delBtn = document.createElement('button');
+    delBtn.className = 'del-btn';
+    delBtn.textContent = '×';
+    delBtn.title = 'Supprimer';
+    delBtn.type = 'button';
+    delBtn.addEventListener('click', (function(k, i) {
+      return function() {
+        LISTS[k].splice(i, 1);
+        renderRefList(k);
+        populateAll();
+        scheduleAutoSave();
+      };
+    })(key, idx));
+    div.appendChild(delBtn);
+
+    container.appendChild(div);
+  });
+}
+
+function renderAllRefLists() {
+  Object.keys(LISTS).forEach(function(k) { renderRefList(k); });
+}
+
+function addEntry(key) {
+  if (!LISTS[key]) return;
+  var hasDect = LISTS[key].length === 0 || Object.prototype.hasOwnProperty.call(LISTS[key][0], 'dect');
+  LISTS[key].push(hasDect ? {nom: '', dect: ''} : {nom: ''});
+  renderRefList(key);
+  var container = document.getElementById('refl-' + key);
+  if (container) {
+    var last = container.lastElementChild;
+    if (last) {
+      var inp = last.querySelector('.e-nom');
+      if (inp) { inp.focus(); inp.select(); }
+    }
+  }
+  scheduleAutoSave();
+}
+
+/* ═══════════════════════ STATIC REFERENCE LISTS ═════════════════════ */
+function renderStaticList(elId, items) {
+  var el = document.getElementById(elId);
+  if (!el) return;
+  el.innerHTML = ''; // toujours vider pour éviter les doublons
+  items.forEach(function(it) {
+    var d = document.createElement('div');
+    var nm = document.createElement('span');
+    nm.className = 'pharm-nm';
+    nm.textContent = it.nom;
+    var tel = document.createElement('span');
+    tel.className = 'pharm-tel';
+    tel.textContent = it.dect || it.tel || '';
+    d.appendChild(nm);
+    d.appendChild(tel);
+    el.appendChild(d);
+  });
+}
+
+/* ═══════════════════════ TOGGLE RÉFÉRENCES ══════════════════════════ */
+var refOpen = false;
+function toggleRef() {
+  var section = document.getElementById('ref-section');
+  var btn = document.querySelector('.btn-ref');
+  if (!section) return;
+  refOpen = !refOpen;
+  section.style.display = refOpen ? 'block' : 'none';
+  if (btn) btn.textContent = refOpen ? '✕ Fermer les listes' : '📋 Listes de référence';
+  if (refOpen) {
+    // Toujours re-rendre pour refléter les données actuelles
+    renderAllRefLists();
+    applyDect();
+    renderStaticList('ref-cardio',        CARDIOLOGUES);
+    renderStaticList('ref-rea',           REANIMATEURS);
+    renderStaticList('ref-pharm-bourges', PHARM_BOURGES);
+    renderStaticList('ref-pharm-vierzon', PHARM_VIERZON);
+    renderStaticList('ref-pharm-stam',    PHARM_STAM);
+    // Scroll vers la section
+    setTimeout(function() {
+      section.scrollIntoView({ behavior: 'smooth', block: 'start' });
+    }, 80);
+  }
+}
+
+/* ═══════════════════════ PHARMACIES DE GARDE ════════════════════════ */
+function renderPharmGarde() {
+  var zone = document.getElementById('pharm-zone');
+  var el   = document.getElementById('pharm-garde-list');
+  if (!zone || !el) return;
+  var list = zone.value === 'vierzon' ? PHARM_VIERZON : (zone.value === 'stam' ? PHARM_STAM : PHARM_BOURGES);
+  el.innerHTML = '';
+  list.forEach(function(it) {
+    var row = document.createElement('div');
+    row.className = 'pharm-garde-row';
+    var nm = document.createElement('span');
+    nm.className = 'pharm-garde-nm';
+    nm.textContent = it.nom;
+    nm.title = it.nom;
+    var tel = document.createElement('span');
+    tel.className = 'pharm-garde-tel';
+    tel.textContent = it.tel || it.dect || '';
+    row.appendChild(nm);
+    row.appendChild(tel);
+    el.appendChild(row);
+  });
+}
+
+/* ═══════════════════════ APPEL RAPIDE ══════════════════════════════ */
+function openAppelRapide() {
+  buildAppelGrid();
+  var ov = document.getElementById('appel-modal');
+  if (ov) { ov.classList.add('open'); document.body.style.overflow = 'hidden'; }
+}
+function closeAppelRapide() {
+  var ov = document.getElementById('appel-modal');
+  if (ov) { ov.classList.remove('open'); document.body.style.overflow = ''; }
+}
+
+function buildAppelGrid() {
+  var body = document.getElementById('appel-body');
+  if (!body) return;
+  body.innerHTML = '';
+
+  var sections = [
+    { title:'☀️ Régulateurs Jour', color:'#2d5aa0', items:[
+      {label:'J1', nameF:'regj1-nom', dectF:'regj1-dect'},
+      {label:'J2', nameF:'regj2-nom', dectF:'regj2-dect'}
+    ]},
+    { title:'🌙 Régulateurs Nuit', color:'#1b3a6b', items:[
+      {label:'N1', nameF:'regn1-nom', dectF:'regn1-dect'},
+      {label:'N2', nameF:'regn2-nom', dectF:'regn2-dect'}
+    ]},
+    { title:'👨‍⚕️ Méd. Régulateur Libéral', color:'#1a6b6b', items:[
+      {label:'MRL 1', nameF:'mrl1', dectF:''},
+      {label:'MRL 2', nameF:'mrl2', dectF:''}
+    ]},
+    { title:'🏥 Administration', color:'#8a5e00', items:[
+      {label:'Administrateur', nameF:'admin-garde', dectF:''}
+    ]},
+    { title:'☀️ Ambulances Jour', color:'#2a7a3b', items:[
+      {label:'B1',     nameF:'aj-b1',   telF:'aj-b1-tel'},
+      {label:'B2',     nameF:'aj-b2',   telF:'aj-b2-tel'},
+      {label:'B3',     nameF:'aj-b3',   telF:'aj-b3-tel'},
+      {label:'VZ',     nameF:'aj-vz',   telF:'aj-vz-tel'},
+      {label:'St Amd', nameF:'aj-stam', telF:'aj-stam-tel'},
+      {label:'Nord',   nameF:'aj-nord', telF:'aj-nord-tel'},
+      {label:'Est',    nameF:'aj-est',  telF:'aj-est-tel'}
+    ]},
+    { title:'🌙 Ambulances Nuit', color:'#4a5568', items:[
+      {label:'B1',     nameF:'an-b1',   telF:'an-b1-tel'},
+      {label:'B2',     nameF:'an-b2',   telF:'an-b2-tel'},
+      {label:'B3',     nameF:'an-b3',   telF:'an-b3-tel'},
+      {label:'VZ',     nameF:'an-vz',   telF:'an-vz-tel'},
+      {label:'St Amd', nameF:'an-stam', telF:'an-stam-tel'},
+      {label:'Nord',   nameF:'an-nord', telF:'an-nord-tel'},
+      {label:'Est',    nameF:'an-est',  telF:'an-est-tel'}
+    ]}
+  ];
+
+  var totalTiles = 0;
+  sections.forEach(function(sec) {
+    var tiles = [];
+    sec.items.forEach(function(it) {
+      var name = getFieldVal(it.nameF);
+      if (!name) return;
+      var dect = it.dectFixed || (it.dectF ? getFieldVal(it.dectF) : '');
+      var tel  = it.telF ? getFieldVal(it.telF) : '';
+      // Pour les ambulances (pas de DECT), afficher le téléphone en grand
+      if (!dect && tel) { dect = tel; tel = ''; }
+      tiles.push({label:it.label, name:name, dect:dect, tel:tel, color:sec.color});
+    });
+    if (!tiles.length) return;
+    totalTiles += tiles.length;
+
+    var titleEl = document.createElement('div');
+    titleEl.className = 'appel-section-title';
+    titleEl.textContent = sec.title;
+    body.appendChild(titleEl);
+
+    var grid = document.createElement('div');
+    grid.className = 'appel-grid';
+
+    tiles.forEach(function(t) {
+      var tile = document.createElement('div');
+      tile.className = 'appel-tile';
+      var copyVal = t.dect || t.tel || t.name;
+      tile.innerHTML =
+        '<div class="at-head" style="background:' + t.color + '">' + t.label + '</div>' +
+        '<div class="at-body">' +
+          '<div class="at-name">' + t.name + '</div>' +
+          (t.dect ? '<div class="at-dect">' + t.dect + '</div>' : '') +
+          (t.tel  ? '<div class="at-tel">📱 ' + t.tel + '</div>' : '') +
+          '<div class="at-hint" id="hint-' + totalTiles + '">Cliquer pour copier</div>' +
+        '</div>';
+      (function(tv, idx) {
+        tile.addEventListener('click', function() {
+          try { navigator.clipboard.writeText(tv); } catch(e) {
+            var ta = document.createElement('textarea');
+            ta.value = tv; ta.style.cssText = 'position:fixed;top:-9999px';
+            document.body.appendChild(ta); ta.select(); document.execCommand('copy'); document.body.removeChild(ta);
+          }
+          var hint = tile.querySelector('.at-hint');
+          if (hint) { hint.textContent = '✔ Copié !'; hint.className = 'at-hint at-copied-msg'; }
+          setTimeout(function() {
+            if (hint) { hint.textContent = 'Cliquer pour copier'; hint.className = 'at-hint'; }
+          }, 1800);
+        });
+      })(copyVal, totalTiles);
+      grid.appendChild(tile);
+    });
+    body.appendChild(grid);
+  });
+
+  if (!totalTiles) {
+    body.innerHTML = '<div class="appel-empty">Aucun membre d\'équipe sélectionné dans le tableau.<br>Remplissez d\'abord les champs puis rouvrez ce panneau.</div>';
+  }
+}
+
+/* ═══════════════════════ MODÈLES & ROTATION ═════════════════════════ */
+var JOURS = ['Dimanche','Lundi','Mardi','Mercredi','Jeudi','Vendredi','Samedi'];
+
+function openRotation() {
+  renderTemplates();
+  renderRotDays();
+  var chk = document.getElementById('rot-auto-chk');
+  try { if (chk) chk.checked = localStorage.getItem('garde_rot_auto') === '1'; } catch(e) {}
+  var ov = document.getElementById('rot-modal');
+  if (ov) { ov.classList.add('open'); document.body.style.overflow = 'hidden'; }
+}
+function closeRotation() {
+  var ov = document.getElementById('rot-modal');
+  if (ov) { ov.classList.remove('open'); document.body.style.overflow = ''; }
+}
+function switchRotTab(tab) {
+  document.querySelectorAll('.rot-tab').forEach(function(t,i) {
+    t.className = 'rot-tab' + ((i === 0 && tab==='tpl') || (i===1 && tab==='rot') ? ' active' : '');
+  });
+  document.getElementById('rot-tab-tpl').className = 'rot-tab-content' + (tab==='tpl'?' active':'');
+  document.getElementById('rot-tab-rot').className = 'rot-tab-content' + (tab==='rot'?' active':'');
+}
+
+function getTemplates() {
+  try { return JSON.parse(localStorage.getItem('garde_templates') || '{}'); } catch(e) { return {}; }
+}
+function setTemplates(t) {
+  try { localStorage.setItem('garde_templates', JSON.stringify(t)); } catch(e) {}
+}
+
+function saveTemplate() {
+  var inp = document.getElementById('tpl-name-input');
+  var name = inp ? inp.value.trim() : '';
+  if (!name) { if(inp){inp.style.borderColor='#b82222';setTimeout(function(){inp.style.borderColor='';},1200);} return; }
+  var state = {};
+  document.querySelectorAll('[data-field]').forEach(function(el) {
+    if (el.value) state[el.dataset.field] = el.value;
+  });
+  var tpls = getTemplates();
+  tpls[name] = { state:state, saved: new Date().toLocaleDateString('fr-FR') };
+  setTemplates(tpls);
+  if (inp) inp.value = '';
+  renderTemplates();
+  renderRotDays();
+  triggerSaved();
+}
+
+function applyTemplate(name) {
+  var tpls = getTemplates();
+  if (!tpls[name]) return;
+  document.querySelectorAll('[data-field]').forEach(function(el) { el.value = ''; });
+  var state = tpls[name].state || {};
+  document.querySelectorAll('[data-field]').forEach(function(el) {
+    if (state[el.dataset.field]) el.value = state[el.dataset.field];
+  });
+  refreshLeftDisplay();
+  scheduleAutoSave();
+  closeRotation();
+  // Banner confirmation
+  showRotBanner('✔ Modèle "' + name + '" appliqué');
+}
+
+function deleteTemplate(name) {
+  if (!confirm('Supprimer le modèle "' + name + '" ?')) return;
+  var tpls = getTemplates();
+  delete tpls[name];
+  setTemplates(tpls);
+  // Nettoyer la rotation si ce modèle était assigné
+  try {
+    var rot = JSON.parse(localStorage.getItem('garde_rotation') || '{}');
+    Object.keys(rot).forEach(function(k) { if (rot[k] === name) rot[k] = ''; });
+    localStorage.setItem('garde_rotation', JSON.stringify(rot));
+  } catch(e) {}
+  renderTemplates();
+  renderRotDays();
+}
+
+function renderTemplates() {
+  var list = document.getElementById('tpl-list');
+  if (!list) return;
+  list.innerHTML = '';
+  var tpls = getTemplates();
+  var names = Object.keys(tpls);
+  if (!names.length) {
+    list.innerHTML = '<p style="color:#aaa;font-size:12px;text-align:center;padding:16px">Aucun modèle sauvegardé</p>';
+    return;
+  }
+  names.forEach(function(n) {
+    var item = document.createElement('div');
+    item.className = 'tpl-item';
+    var nm = document.createElement('span'); nm.className = 'tpl-name'; nm.textContent = n;
+    var dt = document.createElement('span'); dt.className = 'tpl-date'; dt.textContent = tpls[n].saved || '';
+    var ap = document.createElement('button'); ap.className = 'tpl-apply'; ap.textContent = '▶ Appliquer';
+    var dl = document.createElement('button'); dl.className = 'tpl-del'; dl.textContent = '×'; dl.title = 'Supprimer';
+    (function(name){ ap.addEventListener('click', function(){ applyTemplate(name); }); dl.addEventListener('click', function(){ deleteTemplate(name); }); })(n);
+    item.appendChild(nm); item.appendChild(dt); item.appendChild(ap); item.appendChild(dl);
+    list.appendChild(item);
+  });
+}
+
+function renderRotDays() {
+  var tbody = document.getElementById('rot-days-body');
+  if (!tbody) return;
+  tbody.innerHTML = '';
+  var tpls = getTemplates();
+  var names = Object.keys(tpls);
+  var rot = {};
+  try { rot = JSON.parse(localStorage.getItem('garde_rotation') || '{}'); } catch(e) {}
+  var today = new Date().getDay();
+
+  JOURS.forEach(function(jour, idx) {
+    var tr = document.createElement('tr');
+    if (idx === today) tr.className = 'rot-today-row';
+    var tdJ = document.createElement('td');
+    tdJ.textContent = (idx === today ? '▶ ' : '') + jour;
+    var tdS = document.createElement('td');
+    var sel = document.createElement('select');
+    sel.style.cssText = 'width:100%;border:1px solid #d0d9ea;border-radius:5px;padding:3px 6px;font-size:12px';
+    var opt0 = document.createElement('option'); opt0.value = ''; opt0.textContent = '— Aucun —'; sel.appendChild(opt0);
+    names.forEach(function(n) {
+      var o = document.createElement('option'); o.value = n; o.textContent = n;
+      if (rot[idx] === n) o.selected = true;
+      sel.appendChild(o);
+    });
+    tdS.appendChild(sel);
+    tr.appendChild(tdJ); tr.appendChild(tdS);
+    tbody.appendChild(tr);
+  });
+}
+
+function saveRotation() {
+  var tbody = document.getElementById('rot-days-body');
+  if (!tbody) return;
+  var rot = {};
+  var rows = tbody.querySelectorAll('tr');
+  rows.forEach(function(tr, i) {
+    var sel = tr.querySelector('select');
+    if (sel) rot[i] = sel.value;
+  });
+  try { localStorage.setItem('garde_rotation', JSON.stringify(rot)); } catch(e) {}
+  triggerSaved();
+  showRotBanner('✔ Rotation enregistrée');
+}
+
+function toggleRotAuto() {
+  var chk = document.getElementById('rot-auto-chk');
+  try { localStorage.setItem('garde_rot_auto', chk && chk.checked ? '1' : '0'); } catch(e) {}
+}
+
+function checkAutoRotation() {
+  try {
+    if (localStorage.getItem('garde_rot_auto') !== '1') return;
+    var rot = JSON.parse(localStorage.getItem('garde_rotation') || '{}');
+    var today = new Date().getDay();
+    var modelName = rot[today];
+    if (!modelName) return;
+    // N'appliquer que si le tableau est quasi-vide
+    var filled = 0;
+    document.querySelectorAll('[data-field]').forEach(function(el) { if (el.value) filled++; });
+    if (filled > 3) return;
+    var tpls = getTemplates();
+    if (!tpls[modelName]) return;
+    var state = tpls[modelName].state || {};
+    document.querySelectorAll('[data-field]').forEach(function(el) {
+      if (state[el.dataset.field]) el.value = state[el.dataset.field];
+    });
+    refreshLeftDisplay();
+    showRotBanner('✔ Modèle "' + modelName + '" appliqué automatiquement pour ' + JOURS[today]);
+  } catch(e) {}
+}
+
+function showRotBanner(msg) {
+  var b = document.getElementById('rot-banner');
+  if (!b) return;
+  b.textContent = msg; b.style.display = 'block';
+  setTimeout(function() { b.style.display = 'none'; }, 4000);
+}
+
+/* ═══════════════════════ BARRE DE PROGRESSION ════════════════════════ */
+function updateProgress() {
+  var now = new Date();
+  var h = now.getHours(), m = now.getMinutes();
+  var totalMin = h * 60 + m;
+var hdl = document.getElementById('header-date-long');
+if (hdl) hdl.textContent = new Date().toLocaleDateString('fr-FR', {weekday:'long', day:'numeric', month:'long', year:'numeric'});
+  // Horloge
+  var cl = document.getElementById('garde-clock');
+  if (cl) cl.textContent = (h < 10 ? '0' : '') + h + ':' + (m < 10 ? '0' : '') + m;
+  var dl = document.getElementById('garde-date-long');
+  if (dl) dl.textContent = now.toLocaleDateString('fr-FR', {weekday:'long', day:'numeric', month:'long', year:'numeric'});
+
+  // Garde JOUR : 8h → 20h = 720 min
+  var JOUR_START = 8 * 60, JOUR_END = 20 * 60, DUR = 720;
+  var isJour = (totalMin >= JOUR_START && totalMin < JOUR_END);
+  var jourPct, jourStat;
+  if (isJour) {
+    jourPct = Math.round((totalMin - JOUR_START) / DUR * 100);
+    var rJ = JOUR_END - totalMin;
+    jourStat = jourPct + '% — ' + Math.floor(rJ / 60) + 'h' + (rJ % 60 ? (rJ % 60) + 'min' : '') + ' restantes';
+  } else if (totalMin >= JOUR_END) {
+    jourPct = 100; jourStat = 'Terminée';
+  } else {
+    var wJ = JOUR_START - totalMin;
+    jourPct = 0; jourStat = 'Dans ' + Math.floor(wJ / 60) + 'h' + (wJ % 60 ? (wJ % 60) + 'min' : '');
+  }
+
+  // Garde NUIT : 20h → 8h = 720 min (passage minuit)
+  var isNuit = (totalMin >= 20 * 60 || totalMin < 8 * 60);
+  var nuitMin;
+  if (totalMin >= 20 * 60)     { nuitMin = totalMin - 20 * 60; }
+  else if (totalMin < 8 * 60)  { nuitMin = (24 * 60 - 20 * 60) + totalMin; }
+  else                         { nuitMin = 0; }
+  var nuitPct, nuitStat;
+  if (isNuit) {
+    nuitPct = Math.round(nuitMin / DUR * 100);
+    var rN = DUR - nuitMin;
+    nuitStat = nuitPct + '% — ' + Math.floor(rN / 60) + 'h' + (rN % 60 ? (rN % 60) + 'min' : '') + ' restantes';
+  } else {
+    var wN = 20 * 60 - totalMin;
+    nuitPct = 0; nuitStat = 'Dans ' + Math.floor(wN / 60) + 'h' + (wN % 60 ? (wN % 60) + 'min' : '');
+  }
+
+  // Mise à jour DOM
+  var jFill = document.getElementById('prog-jour-fill');
+  var nFill = document.getElementById('prog-nuit-fill');
+  var jTitle = document.getElementById('prog-jour-title');
+  var nTitle = document.getElementById('prog-nuit-title');
+  var jStat  = document.getElementById('prog-jour-stat');
+  var nStat  = document.getElementById('prog-nuit-stat');
+  if (jFill)  { jFill.style.width = jourPct + '%'; jFill.className = 'garde-fill' + (isJour ? ' gactive' : ''); }
+  if (nFill)  { nFill.style.width = nuitPct + '%'; nFill.className = 'garde-fill' + (isNuit ? ' gactive' : ''); }
+  if (jTitle) jTitle.className = 'garde-shift-title' + (isJour ? ' gactive' : '');
+  if (nTitle) nTitle.className = 'garde-shift-title' + (isNuit ? ' gactive' : '');
+  if (jStat)  { jStat.textContent = jourStat; jStat.className = 'garde-shift-stat' + (isJour ? ' gactive' : ''); }
+  if (nStat)  { nStat.textContent = nuitStat; nStat.className = 'garde-shift-stat' + (isNuit ? ' gactive' : ''); }
+}
+setInterval(updateProgress, 1000);
+
+/* ═══════════════════════ MODE SOMBRE ════════════════════════════════ */
+function toggleDark() {
+  var isDark = document.body.classList.toggle('dark');
+  var btn = document.getElementById('btn-dark');
+  if (btn) btn.textContent = isDark ? '☀️ Mode clair' : '🌙 Mode sombre';
+  try { localStorage.setItem('garde_dark', isDark ? '1' : '0'); } catch(e) {}
+}
+
+/* ═══════════════════════ RÉSUMÉ GARDE ═══════════════════════════════ */
+function getFieldVal(f) {
+  var el = document.querySelector('[data-field="' + f + '"]');
+  if (!el) return '';
+  if (el.tagName === 'SPAN') return el.textContent.trim();
+  return (el.value || '').trim();
+}
+
+function openResume() {
+  var lines = [];
+  var sep = '─────────────────────────────────────';
+  var dateEl = document.getElementById('garde-date');
+  var dateStr = dateEl ? (dateEl.value || dateEl.textContent || '').trim() : '';
+
+  lines.push('TABLEAU DE GARDE — HÔPITAL');
+  lines.push('');
+  lines.push('Date : ' + (dateStr || '—'));
+  lines.push(sep);
+
+  // Régulateurs Jour
+  lines.push('');
+  lines.push('☀  RÉGULATEURS JOUR');
+  var rj1 = getFieldVal('regj1-nom'), rj1d = getFieldVal('regj1-dect');
+  var rj2 = getFieldVal('regj2-nom'), rj2d = getFieldVal('regj2-dect');
+  if (rj1) lines.push('  J1 : ' + rj1 + (rj1d ? '  DECT ' + rj1d : ''));
+  if (rj2) lines.push('  J2 : ' + rj2 + (rj2d ? '  DECT ' + rj2d : ''));
+  if (!rj1 && !rj2) lines.push('  (non renseigné)');
+
+  // Régulateurs Nuit
+  lines.push('');
+  lines.push('  RÉGULATEURS NUIT');
+  var rn1 = getFieldVal('regn1-nom'), rn1d = getFieldVal('regn1-dect');
+  var rn2 = getFieldVal('regn2-nom'), rn2d = getFieldVal('regn2-dect');
+  if (rn1) lines.push('  N1 : ' + rn1 + (rn1d ? '  DECT ' + rn1d : ''));
+  if (rn2) lines.push('  N2 : ' + rn2 + (rn2d ? '  DECT ' + rn2d : ''));
+  if (!rn1 && !rn2) lines.push('  (non renseigné)');
+
+  // SMUR Primaire
+  lines.push('');
+  lines.push('  SMUR PRIMAIRE');
+  var spMed = getFieldVal('sp-med-nom'), spMedT = getFieldVal('sp-med-tel');
+  var spIde = getFieldVal('sp-ide-nom'), spIdeT = getFieldVal('sp-ide-tel');
+  var spAmb = getFieldVal('sp-ambu-nom'), spAmbT = getFieldVal('sp-ambu-tel');
+  if (spMed) lines.push('  Médecin     : ' + spMed + (spMedT ? '  ' + spMedT : ''));
+  if (spIde) lines.push('  IDE         : ' + spIde + (spIdeT ? '  ' + spIdeT : ''));
+  if (spAmb) lines.push('  Ambulancier : ' + spAmb + (spAmbT ? '  ' + spAmbT : ''));
+  if (!spMed && !spIde && !spAmb) lines.push('  (non renseigné)');
+
+  // SMUR Secondaire
+  lines.push('');
+  lines.push('  SMUR SECONDAIRE');
+  var ssMed = getFieldVal('ss-med-nom'), ssMedT = getFieldVal('ss-med-tel');
+  var ssIde = getFieldVal('ss-ide-nom'), ssIdeT = getFieldVal('ss-ide-tel');
+  var ssAmb = getFieldVal('ss-ambu-nom'), ssAmbT = getFieldVal('ss-ambu-tel');
+  if (ssMed) lines.push('  Médecin     : ' + ssMed + (ssMedT ? '  ' + ssMedT : ''));
+  if (ssIde) lines.push('  IDE         : ' + ssIde + (ssIdeT ? '  ' + ssIdeT : ''));
+  if (ssAmb) lines.push('  Ambulancier : ' + ssAmb + (ssAmbT ? '  ' + ssAmbT : ''));
+  if (!ssMed && !ssIde && !ssAmb) lines.push('  (non renseigné)');
+
+  // Médecin Régulateur Libéral
+  var mrl1 = getFieldVal('mrl1'), mrl2 = getFieldVal('mrl2');
+  if (mrl1 || mrl2) {
+    lines.push('');
+    lines.push('  MÉD. RÉGULATEUR LIBÉRAL');
+    if (mrl1) lines.push('  1 : ' + mrl1);
+    if (mrl2) lines.push('  2 : ' + mrl2);
+  }
+
+  // Administrateur
+  var admin = getFieldVal('admin-garde');
+  if (admin) {
+    lines.push('');
+    lines.push('  ADMINISTRATEUR DE GARDE');
+    lines.push('  ' + admin);
+  }
+
+  // Ambulances Jour
+  lines.push('');
+  lines.push('☀  AMBULANCES JOUR');
+  var secJ = [['B1','aj-b1'],['B2','aj-b2'],['B3','aj-b3'],['VZ','aj-vz'],['St Amd','aj-stam'],['Nord','aj-nord'],['Est','aj-est'],['Sud','aj-sud']];
+  var anyJ = false;
+  secJ.forEach(function(s) {
+    var n = getFieldVal(s[1]), t = getFieldVal(s[1] + '-tel');
+    if (n) { lines.push('  ' + s[0] + ' : ' + n + (t ? '  ' + t : '')); anyJ = true; }
+  });
+  if (!anyJ) lines.push('  (non renseigné)');
+
+  // Ambulances Nuit
+  lines.push('');
+  lines.push('  AMBULANCES NUIT');
+  var secN = [['B1','an-b1'],['B2','an-b2'],['B3','an-b3'],['VZ','an-vz'],['St Amd','an-stam'],['Nord','an-nord'],['Est','an-est'],['Sud','an-sud']];
+  var anyN = false;
+  secN.forEach(function(s) {
+    var n = getFieldVal(s[1]), t = getFieldVal(s[1] + '-tel');
+    if (n) { lines.push('  ' + s[0] + ' : ' + n + (t ? '  ' + t : '')); anyN = true; }
+  });
+  if (!anyN) lines.push('  (non renseigné)');
+
+  // Ambulances spéciales
+  var aSort = getFieldVal('ambu-sortie'), aSortT = getFieldVal('ambu-sortie-tel');
+  var aGht  = getFieldVal('ambu-ght'),   aGhtT  = getFieldVal('ambu-ght-tel');
+  if (aSort || aGht) {
+    lines.push('');
+    lines.push('  AMBULANCES SPÉCIALES');
+    if (aSort) lines.push('  Sortie : ' + aSort + (aSortT ? '  ' + aSortT : ''));
+    if (aGht)  lines.push('  GHT    : ' + aGht  + (aGhtT  ? '  ' + aGhtT  : ''));
+  }
+
+  // Notes
+  var notes = getFieldVal('notes-jour');
+  if (notes) {
+    lines.push('');
+    lines.push('  NOTES DU JOUR');
+    lines.push(notes);
+  }
+
+  lines.push('');
+  lines.push(sep);
+  var now = new Date();
+  lines.push('Généré le ' + now.toLocaleDateString('fr-FR', {weekday:'long',year:'numeric',month:'long',day:'numeric'}) + ' à ' + now.toLocaleTimeString('fr-FR', {hour:'2-digit',minute:'2-digit'}));
+
+  var el = document.getElementById('resume-content');
+  if (el) el.textContent = lines.join('\n');
+  var ov = document.getElementById('resume-modal');
+  if (ov) { ov.classList.add('open'); document.body.style.overflow = 'hidden'; }
+}
+
+function openAide() {
+  var ov = document.getElementById('aide-modal');
+  if (ov) { ov.classList.add('open'); document.body.style.overflow = 'hidden'; }
+}
+function closeAide() {
+  var ov = document.getElementById('aide-modal');
+  if (ov) { ov.classList.remove('open'); document.body.style.overflow = ''; }
+}
+
+function closeResume() {
+  var ov = document.getElementById('resume-modal');
+  if (ov) { ov.classList.remove('open'); document.body.style.overflow = ''; }
+}
+
+function copyResume() {
+  var el = document.getElementById('resume-content');
+  var btn = document.getElementById('btn-copy');
+  if (!el) return;
+  function markCopied() {
+    if (btn) { btn.textContent = '✔ Copié !'; btn.classList.add('copied'); }
+    setTimeout(function() {
+      if (btn) { btn.textContent = '📋 Copier'; btn.classList.remove('copied'); }
+    }, 2200);
+  }
+  try {
+    navigator.clipboard.writeText(el.textContent).then(markCopied);
+  } catch(e) {
+    var ta = document.createElement('textarea');
+    ta.value = el.textContent;
+    ta.style.cssText = 'position:fixed;top:-9999px';
+    document.body.appendChild(ta);
+    ta.select();
+    document.execCommand('copy');
+    document.body.removeChild(ta);
+    markCopied();
+  }
+}
+
+function printResume() {
+  var el = document.getElementById('resume-content');
+  if (!el) return;
+  var contenu = el.textContent;
+  var w = window.open('', '_blank', 'width=700,height=850');
+  w.document.write('<!DOCTYPE html><html><head><meta charset="utf-8"><title>Résumé de la garde</title>');
+  w.document.write('<style>');
+  w.document.write('body{font-family:\'Courier New\',monospace;font-size:13px;line-height:1.8;margin:30px 40px;color:#1a1a2e}');
+  w.document.write('h2{font-family:Arial,sans-serif;font-size:18px;color:#1a3a6b;border-bottom:2px solid #1a3a6b;padding-bottom:6px;margin-bottom:18px}');
+  w.document.write('pre{white-space:pre-wrap;word-wrap:break-word}');
+  w.document.write('@media print{body{margin:15px}}');
+  w.document.write('</style></head><body>');
+  w.document.write('<h2>📄 Résumé de la garde — ' + new Date().toLocaleDateString('fr-FR', {weekday:'long',year:'numeric',month:'long',day:'numeric'}) + '</h2>');
+  w.document.write('<pre>' + contenu.replace(/</g,'&lt;').replace(/>/g,'&gt;') + '</pre>');
+  w.document.write('</body></html>');
+  w.document.close();
+  w.focus();
+  setTimeout(function() { w.print(); }, 400);
+}
+
+/* ═══════════════════════ CARTE DES SECTEURS ════════════════════════ */
+var carteMap = null;
+var carteLayerGroup = null;
+var carteShift = 'jour';
+
+var SECTEURS = [
+  { id:'B1',  label:'Bourges B1',    color:'#2d5aa0', fieldJ:'aj-b1',   fieldN:'an-b1',
+    coords:[[47.09,2.28],[47.22,2.28],[47.22,2.48],[47.09,2.48]] },
+  { id:'B2',  label:'Bourges B2',    color:'#1b3a6b', fieldJ:'aj-b2',   fieldN:'an-b2',
+    coords:[[46.95,2.28],[47.09,2.28],[47.09,2.48],[46.95,2.48]] },
+  { id:'B3',  label:'Bourges B3',    color:'#5b8dee', fieldJ:'aj-b3',   fieldN:'an-b3',
+    coords:[[47.09,2.48],[47.28,2.48],[47.28,2.72],[47.09,2.72]] },
+  { id:'VZ',  label:'Vierzon',       color:'#2a7a3b', fieldJ:'aj-vz',   fieldN:'an-vz',
+    coords:[[47.05,1.88],[47.45,1.88],[47.45,2.28],[47.05,2.28]] },
+  { id:'St Amd', label:'St-Amand',   color:'#c8760a', fieldJ:'aj-stam', fieldN:'an-stam',
+    coords:[[46.58,2.28],[46.95,2.28],[46.95,2.72],[46.58,2.72]] },
+  { id:'Nord',label:'Nord',          color:'#7c3fa0', fieldJ:'aj-nord', fieldN:'an-nord',
+    coords:[[47.28,2.15],[47.58,2.15],[47.58,3.08],[47.28,3.08]] },
+  { id:'Est', label:'Est',           color:'#1a7a7a', fieldJ:'aj-est',  fieldN:'an-est',
+    coords:[[46.95,2.72],[47.28,2.72],[47.28,3.08],[46.95,3.08]] },
+  { id:'Sud', label:'Sud',           color:'#b82222', fieldJ:'aj-sud',  fieldN:'an-sud',
+    coords:[[46.58,2.72],[46.95,2.72],[46.95,3.08],[46.58,3.08]] }
+];
+
+function setCarteShift(shift) {
+  carteShift = shift;
+  var bj = document.getElementById('carte-btn-jour');
+  var bn = document.getElementById('carte-btn-nuit');
+  if (bj) bj.className = shift === 'jour' ? 'active' : '';
+  if (bn) bn.className = shift === 'nuit' ? 'active' : '';
+  updateCarte();
+}
+
+function openCarte() {
+  // Auto-détecter la garde selon l'heure
+  var h = new Date().getHours();
+  carteShift = (h >= 20 || h < 8) ? 'nuit' : 'jour';
+  var bj = document.getElementById('carte-btn-jour');
+  var bn = document.getElementById('carte-btn-nuit');
+  if (bj) bj.className = carteShift === 'jour' ? 'active' : '';
+  if (bn) bn.className = carteShift === 'nuit' ? 'active' : '';
+
+  var ov = document.getElementById('carte-modal');
+  if (ov) { ov.classList.add('open'); document.body.style.overflow = 'hidden'; }
+  setTimeout(function() {
+    initCarte();
+    setTimeout(function() { if (carteMap) carteMap.invalidateSize(); }, 150);
+  }, 80);
+}
+
+function closeCarte() {
+  var ov = document.getElementById('carte-modal');
+  if (ov) { ov.classList.remove('open'); document.body.style.overflow = ''; }
+}
+
+function initCarte() {
+  var container = document.getElementById('carte-map');
+  if (!container) return;
+  if (!carteMap) {
+    carteMap = L.map('carte-map', { zoomControl:true, attributionControl:true })
+                .setView([47.08, 2.50], 9);
+    L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+      attribution:'© <a href="https://openstreetmap.org">OpenStreetMap</a>',
+      maxZoom:13
+    }).addTo(carteMap);
+  }
+  carteMap.invalidateSize();
+  buildLegend();
+  updateCarte();
+}
+
+function buildLegend() {
+  var el = document.getElementById('carte-legend');
+  if (!el) return;
+  el.innerHTML = '';
+  SECTEURS.forEach(function(s) {
+    var item = document.createElement('div');
+    item.className = 'carte-leg-item';
+    var dot = document.createElement('div');
+    dot.className = 'carte-leg-dot';
+    dot.style.background = s.color;
+    var lbl = document.createElement('span');
+    lbl.textContent = s.label;
+    item.appendChild(dot);
+    item.appendChild(lbl);
+    el.appendChild(item);
+  });
+}
+
+function updateCarte() {
+  if (!carteMap) return;
+  if (carteLayerGroup) { carteLayerGroup.clearLayers(); } else {
+    carteLayerGroup = L.layerGroup().addTo(carteMap);
+  }
+
+  SECTEURS.forEach(function(s) {
+    var field = carteShift === 'nuit' ? s.fieldN : s.fieldJ;
+    var ambu  = getFieldVal(field) || '';
+    var ambuJ = getFieldVal(s.fieldJ) || '—';
+    var ambuN = getFieldVal(s.fieldN) || '—';
+    var filled = ambu !== '';
+
+    // Polygone
+    var poly = L.polygon(s.coords, {
+      color: s.color, weight: 2.5, opacity: .9,
+      fillColor: s.color, fillOpacity: filled ? .38 : .08
+    });
+
+    poly.bindTooltip(
+      '<b>' + s.label + '</b><br>☀ Jour : ' + ambuJ + '<br>🌙 Nuit : ' + ambuN,
+      { className:'carte-tip', sticky:true }
+    );
+    poly.addTo(carteLayerGroup);
+
+    // Label centré
+    var bounds = L.latLngBounds(s.coords);
+    var center = bounds.getCenter();
+    var icon = L.divIcon({
+      className: 'carte-label',
+      html: '<div class="cl-inner">' +
+              '<div class="cl-sector">' + s.id + '</div>' +
+              '<div class="cl-ambu' + (filled ? '' : ' vide') + '">' +
+                (filled ? ambu : 'Non affecté') +
+              '</div>' +
+            '</div>',
+      iconSize: [100, 36],
+      iconAnchor: [50, 18]
+    });
+    L.marker(center, { icon:icon, interactive:false }).addTo(carteLayerGroup);
+  });
+
+  // Marqueur hôpital
+  var hopIcon = L.divIcon({
+    className:'carte-label',
+    html:'<div style="background:#b82222;color:#fff;font-size:16px;border-radius:50%;width:28px;height:28px;display:flex;align-items:center;justify-content:center;box-shadow:0 2px 6px rgba(0,0,0,.4)">🏥</div>',
+    iconSize:[28,28], iconAnchor:[14,14]
+  });
+  L.marker([47.065, 2.403], { icon:hopIcon })
+   .bindTooltip('<b>Hôpital — SAMU 18</b>', { className:'carte-tip' })
+   .addTo(carteLayerGroup);
+}
+
+/* ═══════════════════════ MODAL SMUR ════════════════════════════════ */
+function openSmurModal() {
+  var ov = document.getElementById('smur-modal');
+  if (ov) { ov.classList.add('open'); document.body.style.overflow = 'hidden'; }
+}
+function closeSmurModal() {
+  var ov = document.getElementById('smur-modal');
+  if (ov) { ov.classList.remove('open'); document.body.style.overflow = ''; }
+}
+document.addEventListener('keydown', function(e) {
+  if (e.key === 'Escape') { closeSmurModal(); closeResume(); closeCarte(); closeAppelRapide(); closeRotation(); closeAide(); }
+});
+
+/* ═══════════════════════ INIT ════════════════════════════════════════ */
+document.addEventListener('DOMContentLoaded', function() {
+  loadState();
+  renderPharmGarde();
+  updateProgress();
+  checkAutoRotation();
+  // Restaurer préférence dark mode
+  try {
+    if (localStorage.getItem('garde_dark') === '1') {
+      document.body.classList.add('dark');
+      var btn = document.getElementById('btn-dark');
+      if (btn) btn.textContent = '☀️ Mode clair';
+    }
+  } catch(e) {}
+});
+</script>
+
+<!-- ═══ MODAL CARTE DES SECTEURS ═════════════════════════════════════ -->
+<div class="carte-modal-overlay" id="carte-modal" onclick="if(event.target===this)closeCarte()">
+  <div class="carte-modal-box">
+    <div class="carte-modal-hd">
+      <span class="ttl">🗺️ Carte des Secteurs — Ambulances de Garde</span>
+      <button onclick="closeCarte()" title="Fermer">✕</button>
+    </div>
+    <div class="carte-modal-subhd">
+      <div class="carte-shift-toggle">
+        <button id="carte-btn-jour" class="active" onclick="setCarteShift('jour')">☀️ Jour</button>
+        <button id="carte-btn-nuit" onclick="setCarteShift('nuit')">🌙 Nuit</button>
+      </div>
+      <div class="carte-legend" id="carte-legend"></div>
+    </div>
+    <div id="carte-map"></div>
+  </div>
+</div>
+
+<!-- ═══ MODAL APPEL RAPIDE ════════════════════════════════════════════ -->
+<div class="appel-modal-overlay" id="appel-modal" onclick="if(event.target===this)closeAppelRapide()">
+  <div class="appel-modal-box">
+    <div class="appel-modal-hd">
+      <span class="ttl">📟 Appel Rapide — Équipe en poste</span>
+      <button onclick="closeAppelRapide()">✕</button>
+    </div>
+    <div class="appel-modal-body" id="appel-body"></div>
+  </div>
+</div>
+
+<!-- ═══ MODAL MODÈLES & ROTATION ══════════════════════════════════════ -->
+<div class="rot-modal-overlay" id="rot-modal" onclick="if(event.target===this)closeRotation()">
+  <div class="rot-modal-box">
+    <div class="rot-modal-hd">
+      <span class="ttl">🔄 Modèles de garde &amp; Rotation</span>
+      <button onclick="closeRotation()">✕</button>
+    </div>
+    <div class="rot-tabs">
+      <div class="rot-tab active" onclick="switchRotTab('tpl')">💾 Modèles</div>
+      <div class="rot-tab" onclick="switchRotTab('rot')">📅 Rotation auto</div>
+    </div>
+    <div class="rot-body">
+      <div class="rot-auto-banner" id="rot-banner"></div>
+      <!-- Onglet Modèles -->
+      <div class="rot-tab-content active" id="rot-tab-tpl">
+        <p style="font-size:11.5px;color:#666;margin-bottom:10px">Sauvegardez l'état actuel du tableau comme modèle réutilisable (équipe du jour, nuit, week-end…)</p>
+        <div class="rot-save-bar">
+          <input type="text" id="tpl-name-input" placeholder="Nom du modèle (ex: Équipe A Semaine)"/>
+          <button class="rot-save-btn" onclick="saveTemplate()">💾 Sauvegarder</button>
+        </div>
+        <div id="tpl-list"></div>
+      </div>
+      <!-- Onglet Rotation -->
+      <div class="rot-tab-content" id="rot-tab-rot">
+        <div class="rot-toggle-wrap">
+          <span class="rot-toggle-lbl">Appliquer automatiquement au chargement de la page</span>
+          <label class="rot-toggle"><input type="checkbox" id="rot-auto-chk" onchange="toggleRotAuto()"/><span class="rot-slider"></span></label>
+        </div>
+        <p style="font-size:11.5px;color:#666;margin-bottom:10px">Associez un modèle à chaque jour de la semaine. Le tableau se pré-remplira automatiquement si le tableau est vide.</p>
+        <table class="rot-table">
+          <thead><tr><th>Jour</th><th>Modèle à appliquer</th></tr></thead>
+          <tbody id="rot-days-body"></tbody>
+        </table>
+        <button onclick="saveRotation()" style="margin-top:12px;background:#2d5aa0;color:#fff;border:none;border-radius:20px;padding:7px 18px;font-size:12px;font-weight:700;cursor:pointer">✔ Enregistrer la rotation</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ═══ MODAL AIDE ════════════════════════════════════════════════════ -->
+<div class="aide-modal-overlay" id="aide-modal" onclick="if(event.target===this)closeAide()">
+  <div class="aide-modal-box">
+    <div class="aide-modal-hd">
+      <span class="ttl">❓ Guide d'utilisation — Tableau de Garde</span>
+      <button onclick="closeAide()" title="Fermer">✕</button>
+    </div>
+    <div class="aide-modal-body">
+
+      <div class="aide-section">
+        <div class="aide-section-title">🗂️ Saisie du personnel</div>
+        <div class="aide-row"><span class="aide-desc">Cliquer sur un champ nom → sélectionner dans la liste déroulante ou taper un nom libre · Saisir le numéro DECT ou téléphone dans le champ à droite · Tout est sauvegardé automatiquement.</span></div>
+      </div>
+
+      <div class="aide-section">
+        <div class="aide-section-title">🔘 Les boutons de la barre</div>
+        <div class="aide-row">
+          <span class="aide-btn-chip" style="background:#2d5aa0;color:#fff">💾 Enregistrer</span>
+          <span class="aide-desc">Sauvegarde toutes les données saisies localement sur ce PC (persistant après fermeture).</span>
+        </div>
+        <div class="aide-row">
+          <span class="aide-btn-chip" style="background:#fff;color:#c0392b;border:1.5px solid #c0392b">↺ Réinitialiser</span>
+          <span class="aide-desc">Efface toutes les données et remet le tableau à zéro. Une confirmation est demandée.</span>
+        </div>
+        <div class="aide-row">
+          <span class="aide-btn-chip" style="background:#fff;color:#2a7a3b;border:1.5px solid #2a7a3b">📋 Listes de référence</span>
+          <span class="aide-desc">Modifier les noms disponibles dans les menus déroulants (ajouter / supprimer du personnel).</span>
+        </div>
+        <div class="aide-row">
+          <span class="aide-btn-chip" style="background:#fff;color:#c8930a;border:1.5px solid #c8930a">📄 Résumé garde</span>
+          <span class="aide-desc">Affiche un récapitulatif de toute l'équipe en poste. Boutons Copier et Imprimer disponibles.</span>
+        </div>
+        <div class="aide-row">
+          <span class="aide-btn-chip" style="background:#fff;color:#1a6b6b;border:1.5px solid #1a6b6b">🗺️ Carte secteurs</span>
+          <span class="aide-desc">Ouvre la carte géographique interactive des secteurs ambulances avec l'équipe en temps réel.</span>
+        </div>
+        <div class="aide-row">
+          <span class="aide-btn-chip" style="background:#b82222;color:#fff">📟 Appel rapide</span>
+          <span class="aide-desc">Panel de contact instantané avec tous les DECT (régulateurs, ARM) et téléphones (ambulances).</span>
+        </div>
+        <div class="aide-row">
+          <span class="aide-btn-chip" style="background:#fff;color:#7c3fa0;border:1.5px solid #7c3fa0">🔄 Modèles &amp; Rotation</span>
+          <span class="aide-desc">Sauvegarder des équipes types et les assigner à un jour de la semaine pour remplissage automatique.</span>
+        </div>
+        <div class="aide-row">
+          <span class="aide-btn-chip" style="background:#fff;color:#1e293b;border:1.5px solid #1e293b">🌙 Mode sombre</span>
+          <span class="aide-desc">Bascule l'interface en thème sombre. Préférence sauvegardée automatiquement.</span>
+        </div>
+      </div>
+
+      <div class="aide-section">
+        <div class="aide-section-title">📋 Listes de référence — comment modifier</div>
+        <div class="aide-row"><span class="aide-desc">1. Cliquer sur <strong>📋 Listes de référence</strong> · 2. Trouver la catégorie (Régulateurs, ARM, IDE SMUR…) · 3. Ajouter ou supprimer des noms · 4. Cliquer <strong>Enregistrer</strong>. Les noms apparaissent ensuite dans les menus déroulants.</span></div>
+      </div>
+
+      <div class="aide-section">
+        <div class="aide-section-title">🔄 Modèles &amp; Rotation — comment utiliser</div>
+        <div class="aide-row"><span class="aide-desc">1. Remplir tout le tableau · 2. Ouvrir <strong>Modèles &amp; Rotation</strong> · 3. Saisir un nom (ex : Equipe A) et cliquer <strong>Sauvegarder le modèle</strong> · 4. Dans la rotation, assigner chaque modèle à un jour de la semaine · 5. Activer la rotation automatique → le tableau se pré-remplit selon le jour.</span></div>
+      </div>
+
+      <div class="aide-section">
+        <div class="aide-section-title">🗺️ Carte des secteurs — modifier les zones</div>
+        <div class="aide-row"><span class="aide-desc">Les contours des secteurs sont définis dans le tableau <strong>SECTEURS</strong> du fichier HTML (coordonnées GPS). Pour les modifier, utiliser <a href="https://geojson.io" target="_blank" rel="noopener" style="color:#0d5a8a">geojson.io</a> pour dessiner les zones et récupérer les coordonnées [lat, lng].</span></div>
+      </div>
+
+      <div class="aide-section">
+        <div class="aide-section-title">Pharmacie de Garde</div>
+        <div class="aide-row"><span class="aide-desc">La liste des pharmacies affichée vient des données intégrées dans le fichier. Le bouton <strong>🌐 Site officiel</strong> ouvre le site national pour trouver la pharmacie de garde en temps réel. Le sélecteur (Bourges / Vierzon / St-Amand) filtre la liste par zone.</span></div>
+      </div>
+
+      <div class="aide-section">
+        <div class="aide-section-title">💡 Raccourcis clavier</div>
+        <div class="aide-row">
+          <span class="aide-btn-chip" style="background:#e8f0fe;color:#2d5aa0;border:1px solid #c0d0f0">Échap</span>
+          <span class="aide-desc">Ferme n'importe quelle fenêtre ouverte (Résumé, Carte, Appel rapide, Rotation…).</span>
+        </div>
+        <div class="aide-row">
+          <span class="aide-btn-chip" style="background:#e8f0fe;color:#2d5aa0;border:1px solid #c0d0f0">Ctrl + P</span>
+          <span class="aide-desc">Imprimer la page complète (ou utiliser le bouton Imprimer dans le Résumé garde).</span>
+        </div>
+      </div>
+
+    </div>
+  </div>
+</div>
+
+<!-- ═══ MODAL RÉSUMÉ GARDE ════════════════════════════════════════════ -->
+<div class="resume-modal-overlay" id="resume-modal" onclick="if(event.target===this)closeResume()">
+  <div class="resume-modal-box">
+    <div class="resume-modal-hd">
+      <span class="ttl">📄 Résumé de la garde</span>
+      <button onclick="closeResume()" title="Fermer">✕</button>
+    </div>
+    <div class="resume-modal-body">
+      <div class="resume-text" id="resume-content"></div>
+      <div style="display:flex;gap:10px;margin-top:10px">
+        <button class="btn-copy" id="btn-copy" onclick="copyResume()">📋 Copier</button>
+        <button class="btn-print" onclick="printResume()">🖨️ Imprimer</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ═══ MODAL ORGANISATION SMUR ══════════════════════════════════════ -->
+<div class="smur-modal-overlay" id="smur-modal" onclick="if(event.target===this)closeSmurModal()">
+  <div class="smur-modal-box">
+    <div class="smur-modal-hd">
+      <span class="ttl">🚑 Organisation Équipe SMUR Primaire &amp; Secondaire</span>
+      <button onclick="closeSmurModal()" title="Fermer">✕</button>
+    </div>
+    <div class="smur-modal-body">
+      <div class="smur-plan-wrap">
+        <table class="smur-plan-table">
+          <thead>
+            <tr>
+              <th class="th-lbl">Équipe / Rôle</th>
+              <th class="th-hr">7</th><th class="th-hr">8</th><th class="th-hr">9</th>
+              <th class="th-hr">10</th><th class="th-hr">11</th><th class="th-hr">12</th>
+              <th class="th-hr">13</th><th class="th-hr">14</th><th class="th-hr">15</th>
+              <th class="th-hr">16</th><th class="th-hr">17</th><th class="th-hr">18</th>
+              <th class="th-hr">19</th><th class="th-hr">20</th><th class="th-hr">21</th>
+              <th class="th-hr">22</th><th class="th-hr">23</th><th class="th-hr">0</th>
+              <th class="th-hr">1</th><th class="th-hr">2</th><th class="th-hr">3</th>
+              <th class="th-hr">4</th><th class="th-hr">5</th><th class="th-hr">6</th>
+            </tr>
+          </thead>
+          <tbody>
+            <!-- ── SMUR JOUR ── -->
+            <tr>
+              <td class="smc-lbl">Ambulancier JOUR 1<span class="dect-tag">7570</span></td>
+              <td class="smc-orange" colspan="5">7h – 12h</td>
+              <td class="smc-yellow" colspan="6">12h – 18h</td>
+              <td class="smc-empty" colspan="12"></td>
+            </tr>
+            <tr>
+              <td class="smc-lbl">IDE JOUR 1<span class="dect-tag">7572</span></td>
+              <td class="smc-orange" colspan="5">7h – 12h</td>
+              <td class="smc-yellow" colspan="6">12h – 18h</td>
+              <td class="smc-empty" colspan="12"></td>
+            </tr>
+            <tr class="smur-plan-sep"><td colspan="24"></td></tr>
+            <tr>
+              <td class="smc-lbl">Ambulancier JOUR 2<span class="dect-tag">7574</span></td>
+              <td class="smc-empty" colspan="3"></td>
+              <td class="smc-lime" colspan="2">10h – 12h</td>
+              <td class="smc-blue" colspan="3">12h – 15h</td>
+              <td class="smc-dkblue" colspan="3">15h – 18h</td>
+              <td class="smc-empty" colspan="12"></td>
+            </tr>
+            <tr>
+              <td class="smc-lbl">IDE JOUR 2<span class="dect-tag">7576</span></td>
+              <td class="smc-empty" colspan="3"></td>
+              <td class="smc-lime" colspan="2">10h – 12h</td>
+              <td class="smc-blue" colspan="3">12h – 15h</td>
+              <td class="smc-dkblue" colspan="3">15h – 18h</td>
+              <td class="smc-empty" colspan="12"></td>
+            </tr>
+            <tr class="smur-plan-sep"><td colspan="24"></td></tr>
+            <!-- ── SMUR NUIT ── -->
+            <tr>
+              <td class="smc-lbl">Ambulancier NUIT 1<span class="dect-tag">7571</span></td>
+              <td class="smc-empty" colspan="12"></td>
+              <td class="smc-salmon" colspan="2">19h – 21h</td>
+              <td class="smc-pink" colspan="2">21h – 23h</td>
+              <td class="smc-yellow" colspan="7">23h – 6h</td>
+            </tr>
+            <tr>
+              <td class="smc-lbl">IDE NUIT 1<span class="dect-tag">7573</span></td>
+              <td class="smc-empty" colspan="12"></td>
+              <td class="smc-salmon" colspan="2">19h – 21h</td>
+              <td class="smc-pink" colspan="2">21h – 23h</td>
+              <td class="smc-yellow" colspan="7">23h – 6h</td>
+            </tr>
+            <tr class="smur-plan-sep"><td colspan="24"></td></tr>
+            <tr>
+              <td class="smc-lbl">Ambulancier NUIT 2<span class="dect-tag">7575</span></td>
+              <td class="smc-lime" colspan="3">7h – 10h</td>
+              <td class="smc-empty" colspan="11"></td>
+              <td class="smc-dkgreen" colspan="9">21h – 6h</td>
+            </tr>
+            <tr>
+              <td class="smc-lbl">IDE NUIT 2<span class="dect-tag">7577</span></td>
+              <td class="smc-lime" colspan="3">7h – 10h</td>
+              <td class="smc-empty" colspan="11"></td>
+              <td class="smc-dkgreen" colspan="9">21h – 6h</td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+
+      <!-- Légende -->
+      <div class="smur-legend">
+        <div class="smur-legend-item"><div class="smur-legend-dot" style="background:#f97316"></div> Matin (7h–12h)</div>
+        <div class="smur-legend-item"><div class="smur-legend-dot" style="background:#fbbf24"></div> Après-midi / Nuit tardive</div>
+        <div class="smur-legend-item"><div class="smur-legend-dot" style="background:#86efac"></div> Chevauchement matin</div>
+        <div class="smur-legend-item"><div class="smur-legend-dot" style="background:#60a5fa"></div> Après-midi J2 (12h–15h)</div>
+        <div class="smur-legend-item"><div class="smur-legend-dot" style="background:#2563eb"></div> Après-midi J2 (15h–18h)</div>
+        <div class="smur-legend-item"><div class="smur-legend-dot" style="background:#fca5a5"></div> Début nuit (19h–21h)</div>
+        <div class="smur-legend-item"><div class="smur-legend-dot" style="background:#f9a8d4"></div> Nuit (21h–23h)</div>
+        <div class="smur-legend-item"><div class="smur-legend-dot" style="background:#16a34a"></div> Nuit 2 (21h–6h)</div>
+      </div>
+    </div>
+  </div>
+</div>
+
+</body>
+</html>
