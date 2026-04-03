@@ -566,7 +566,7 @@ td.td-tel-wrap{display:flex;align-items:center;gap:4px}
 <!-- ═══ HEADER ════════════════════ -->
 <div class="page-header">
   <div class="ttl">Tableau de Garde — Hôpital</div>
-  <div class="sub">SAMU / SMUR — Service de régulation médicale</div>
+  <div class="sub"></div>
   <div>
     <input type="date" id="garde-date" data-field="date" style="position:absolute;opacity:0;width:0;height:0;pointer-events:none" onchange="updateHeaderDateLong()"/>
     <div id="header-date-long" onclick="document.getElementById('garde-date').showPicker()" title="Cliquer pour changer la date" style="cursor:pointer;font-size:14px;font-weight:600;margin-top:6px;opacity:.9;text-transform:capitalize">—</div>
@@ -825,7 +825,7 @@ td.td-tel-wrap{display:flex;align-items:center;gap:4px}
     <div class="card">
       <div class="ch ch-green" style="display:flex;justify-content:space-between;align-items:center">
         <span>💊 Pharmacie de Garde</span>
-        <a href="https://www.pharmaciesurordonnance.org/" target="_blank" rel="noopener" title="Trouver une pharmacie de garde en ligne" style="background:rgba(255,255,255,.22);color:#fff;border:1px solid rgba(255,255,255,.5);border-radius:10px;padding:2px 8px;font-size:10px;font-weight:700;text-decoration:none;white-space:nowrap;transition:.15s" onmouseover="this.style.background='rgba(255,255,255,.38)'" onmouseout="this.style.background='rgba(255,255,255,.22)'">🌐 Site officiel</a>
+        <a href="https://www.resogardes.com/index.php" target="_blank" rel="noopener" title="Trouver une pharmacie de garde en ligne" style="background:rgba(255,255,255,.22);color:#fff;border:1px solid rgba(255,255,255,.5);border-radius:10px;padding:2px 8px;font-size:10px;font-weight:700;text-decoration:none;white-space:nowrap;transition:.15s" onmouseover="this.style.background='rgba(255,255,255,.38)'" onmouseout="this.style.background='rgba(255,255,255,.22)'">🌐 Site officiel</a>
       </div>
       <div style="padding:6px 8px 8px">
         <select id="pharm-zone" onchange="renderPharmGarde()" style="width:100%;margin-bottom:5px">
@@ -985,7 +985,7 @@ td.td-tel-wrap{display:flex;align-items:center;gap:4px}
   </div>
 </div>
 
-<div class="page-footer">Tableau de Garde — Usage interne &nbsp;|&nbsp; Données sauvegardées localement dans le navigateur</div>
+<div class="page-footer">Tableau de Garde — Usage interne - ©Matéo CALLÉJA 2026</div>
 </div><!-- /page -->
 
 <script src="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.min.js"></script>
