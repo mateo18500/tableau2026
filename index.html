@@ -416,6 +416,32 @@ body.dark .pharm-nm{color:#c9d1d9}
 .at-copied-msg{font-size:9px;color:#2a7a3b;font-weight:700;margin-top:5px}
 .appel-empty{text-align:center;padding:36px;color:#aaa;font-size:13px}
 
+/* ══ Statut équipes ambulances ════════════════════════════════════════ */
+.stat-btn{font-size:10.5px;padding:3px 7px;border-radius:12px;border:none;cursor:pointer;font-weight:700;white-space:nowrap;width:100%;text-align:center;transition:opacity .15s;line-height:1.4}
+.stat-btn:hover{opacity:.8}
+.stat-dispo   {background:#d4edda;color:#155724}
+.stat-sll     {background:#ffe0b2;color:#bf360c}
+.stat-bilan   {background:#bbdefb;color:#0d47a1}
+.stat-transport{background:#e1bee7;color:#6a1b9a}
+.stat-indispo {background:#ffcdd2;color:#b71c1c}
+.stat-pause   {background:#fff9c4;color:#e65100}
+.stat-popup{display:none;position:fixed;z-index:9999;background:#fff;border-radius:10px;box-shadow:0 4px 24px rgba(0,0,0,.28);padding:5px;min-width:155px}
+.stat-popup.open{display:block}
+.stat-popup button{display:block;width:100%;text-align:left;padding:7px 11px;border:2px solid transparent;background:none;cursor:pointer;border-radius:6px;font-size:12px;font-weight:700;margin:1px 0;transition:.15s;outline:none}
+.stat-popup button.stat-dispo:hover   {background:#d4edda;border-color:#28a745;color:#155724}
+.stat-popup button.stat-sll:hover     {background:#ffe0b2;border-color:#e65100;color:#bf360c}
+.stat-popup button.stat-bilan:hover   {background:#bbdefb;border-color:#1976d2;color:#0d47a1}
+.stat-popup button.stat-transport:hover{background:#e1bee7;border-color:#8e24aa;color:#6a1b9a}
+.stat-popup button.stat-indispo:hover {background:#ffcdd2;border-color:#e53935;color:#b71c1c}
+.stat-popup button.stat-pause:hover   {background:#fff9c4;border-color:#f9a825;color:#e65100}
+body.dark .stat-popup{background:#1e2530;border:1px solid #30363d}
+body.dark .stat-btn.stat-dispo   {background:#1a3a22;color:#69d99e}
+body.dark .stat-btn.stat-sll     {background:#3a2000;color:#ffb74d}
+body.dark .stat-btn.stat-bilan   {background:#0a2040;color:#90caf9}
+body.dark .stat-btn.stat-transport{background:#2a0a3a;color:#ce93d8}
+body.dark .stat-btn.stat-indispo {background:#3a0a0a;color:#ef9a9a}
+body.dark .stat-btn.stat-pause   {background:#3a3000;color:#fff176}
+
 /* ══ Modal Rotation / Modèles — panneau latéral droit ════════════════ */
 .rot-modal-overlay{display:none;position:fixed;top:0;right:0;bottom:0;width:min(460px,100vw);z-index:9003;pointer-events:none}
 .rot-modal-overlay.open{display:block}
@@ -474,6 +500,41 @@ body.dark .at-name{color:#c9d1d9}
 body.dark .at-dect{color:#79b8ff}
 
 
+/* ── Fiche info double-clic ── */
+.info-card{position:absolute;z-index:7000;background:#fff;border-radius:10px;box-shadow:0 6px 28px rgba(0,0,0,.22);padding:12px 14px;min-width:190px;max-width:240px;border-top:3px solid #2d5aa0;animation:smurFadeIn .15s ease}
+body.dark .info-card{background:#1c2333;border-top-color:#5bb3f0;color:#c9d1d9}
+.ic-name{font-size:13px;font-weight:700;color:#1b3a6b;margin-bottom:8px;padding-right:20px}
+body.dark .ic-name{color:#79b8ff}
+.ic-row{display:flex;align-items:center;gap:8px;margin-bottom:5px;font-size:12px}
+.ic-lbl{font-size:10px;font-weight:700;text-transform:uppercase;color:#888;min-width:38px}
+.ic-dect{font-family:monospace;font-weight:700;color:#856404;background:#fff3cd;padding:2px 7px;border-radius:8px;border:1px solid #ffc107}
+.ic-tel{color:#2a7a3b;font-weight:700;text-decoration:none}.ic-tel:hover{text-decoration:underline}
+.ic-empty{font-size:11px;color:#aaa;font-style:italic}
+.ic-close{position:absolute;top:8px;right:8px;background:none;border:none;color:#aaa;font-size:15px;cursor:pointer;line-height:1;padding:2px}
+.ic-close:hover{color:#b82222}
+
+
+/* ── Alerte secteurs vides ── */
+.alerte-garde{display:none;position:fixed;top:0;left:0;right:0;z-index:8000;background:linear-gradient(90deg,#b45309,#d97706);color:#fff;padding:10px 16px;box-shadow:0 3px 16px rgba(0,0,0,.3);animation:alertePulse 2s ease-in-out infinite}
+.alerte-garde.alerte-urgente{background:linear-gradient(90deg,#991b1b,#dc2626);animation:alertePulse .8s ease-in-out infinite}
+@keyframes alertePulse{0%,100%{opacity:1}50%{opacity:.82}}
+.alerte-garde-inner{max-width:1440px;margin:0 auto;display:flex;align-items:center;gap:12px;flex-wrap:wrap}
+.alerte-garde-icon{font-size:20px;flex-shrink:0}
+.alerte-garde-txt{flex:1;font-size:12.5px;font-weight:700;line-height:1.4}
+.alerte-garde-sectors{font-size:11.5px;font-weight:400;margin-top:2px;opacity:.92}
+.alerte-garde-close{background:rgba(255,255,255,.2);border:1px solid rgba(255,255,255,.4);color:#fff;border-radius:50%;width:24px;height:24px;font-size:14px;cursor:pointer;display:flex;align-items:center;justify-content:center;flex-shrink:0;transition:.15s}
+.alerte-garde-close:hover{background:rgba(255,255,255,.35)}
+@media print{.alerte-garde{display:none!important}}
+
+/* ── Bouton Base ambulance ── */
+.btn-base-fill{display:inline-flex;align-items:center;gap:3px;background:#e8f4fc;color:#0d5a8a;border:1px solid #b3d4ed;border-radius:10px;padding:2px 7px;font-size:10px;font-weight:700;cursor:pointer;white-space:nowrap;transition:.15s;flex-shrink:0;line-height:1.4}
+.btn-base-fill:hover{background:#0d5a8a;color:#fff;border-color:#0d5a8a}
+.btn-base-fill.ok{background:#22c55e;color:#fff;border-color:#22c55e}
+.btn-base-fill.err{background:#fee2e2;color:#b82222;border-color:#fca5a5}
+body.dark .btn-base-fill{background:#1c2d3d;color:#5bb3f0;border-color:#2d4a6a}
+body.dark .btn-base-fill:hover{background:#5bb3f0;color:#0d1117}
+td.td-tel-wrap{display:flex;align-items:center;gap:4px}
+
 /* ── Print ── */
 @media print{
   body{background:#fff;padding:0}
@@ -487,6 +548,18 @@ body.dark .at-dect{color:#79b8ff}
 </head>
 <body>
 
+
+<!-- ═══ BANNIÈRE ALERTE SECTEURS VIDES ═══════════════════════════════ -->
+<div class="alerte-garde" id="alerte-garde" role="alert">
+  <div class="alerte-garde-inner">
+    <span class="alerte-garde-icon">⚠️</span>
+    <div class="alerte-garde-txt">
+      <span id="alerte-garde-titre">Attention — secteurs sans ambulance affectée</span>
+      <div class="alerte-garde-sectors" id="alerte-garde-sectors"></div>
+    </div>
+    <button class="alerte-garde-close" onclick="dismissAlerte()" title="Masquer">✕</button>
+  </div>
+</div>
 
 <div class="page">
 
@@ -528,7 +601,7 @@ body.dark .at-dect{color:#79b8ff}
   <button class="btn-reset" onclick="resetAll()">↺ Réinitialiser</button>
   <button class="btn-ref" onclick="toggleRef()">📋 Listes de référence</button>
   <button class="btn-resume" onclick="openResume()">📄 Résumé garde</button>
-  <button class="btn-carte" onclick="openCarte()" style="background:#fff;color:#1a6b6b;border:1.5px solid #1a6b6b!important;display:inline-flex;align-items:center;gap:4px;padding:5px 13px;border-radius:20px;font-size:12px;font-weight:700;cursor:pointer;transition:.15s">🗺️ Carte secteurs</button>
+<button class="btn-carte" onclick="openCarte()" style="background:#fff;color:#1a6b6b;border:1.5px solid #1a6b6b!important;display:inline-flex;align-items:center;gap:4px;padding:5px 13px;border-radius:20px;font-size:12px;font-weight:700;cursor:pointer;transition:.15s">🗺️ Carte secteurs</button>
   <button onclick="openAppelRapide()" style="background:#fff;color:#b82222;border:1.5px solid #b82222!important;display:inline-flex;align-items:center;gap:4px;padding:5px 13px;border-radius:20px;font-size:12px;font-weight:700;cursor:pointer;transition:.15s">📟 Appel rapide</button>
   <button onclick="openRotation()" style="background:#fff;color:#7c3fa0;border:1.5px solid #7c3fa0!important;display:inline-flex;align-items:center;gap:4px;padding:5px 13px;border-radius:20px;font-size:12px;font-weight:700;cursor:pointer;transition:.15s">🔄 Modèles & Rotation</button>
   <button class="btn-dark" id="btn-dark" onclick="toggleDark()">🌙 Mode sombre</button>
@@ -675,15 +748,15 @@ body.dark .at-dect{color:#79b8ff}
     <div class="card">
       <div class="ch ch-green" style="text-align:center;padding:9px 10px">🌤️ &nbsp;Ambulances de Garde — Jour</div>
       <table>
-        <thead><tr><th style="width:52px">Secteur</th><th>Ambulance</th><th>Téléphone</th></tr></thead>
+        <thead><tr><th style="width:52px">Secteur</th><th>Ambulance</th><th>Téléphone</th><th style="width:108px">Statut</th></tr></thead>
         <tbody>
-          <tr><td class="sid">B1</td><td><select class="sel-achb" data-field="aj-b1"></select></td><td><input type="text" class="inp-tel" data-field="aj-b1-tel" placeholder="Base ou 06…"/></td></tr>
-          <tr><td class="sid">B2</td><td><select class="sel-achb" data-field="aj-b2"></select></td><td><input type="text" class="inp-tel" data-field="aj-b2-tel" placeholder="Base ou 06…"/></td></tr>
-          <tr><td class="sid">B3</td><td><select class="sel-achb" data-field="aj-b3"></select></td><td><input type="text" class="inp-tel" data-field="aj-b3-tel" placeholder="Base ou 06…"/></td></tr>
-          <tr><td class="sid">VZ</td><td><select class="sel-avz" data-field="aj-vz"></select></td><td><input type="text" class="inp-tel" data-field="aj-vz-tel" placeholder="Base ou 06…"/></td></tr>
-          <tr><td class="sid">St Amd</td><td><select class="sel-astam" data-field="aj-stam"></select></td><td><input type="text" class="inp-tel" data-field="aj-stam-tel" placeholder="Base ou 06…"/></td></tr>
-          <tr><td class="sid">Nord</td><td><select class="sel-anord" data-field="aj-nord"></select></td><td><input type="text" class="inp-tel" data-field="aj-nord-tel" placeholder="Base ou 06…"/></td></tr>
-          <tr><td class="sid">Est</td><td><select class="sel-aest" data-field="aj-est"></select></td><td><input type="text" class="inp-tel" data-field="aj-est-tel" placeholder="Base ou 06…"/></td></tr>
+          <tr><td class="sid">B1</td><td><select class="sel-achb" data-field="aj-b1"></select></td><td><input type="text" class="inp-tel" data-field="aj-b1-tel" placeholder="Base ou 06…"/></td><td><button class="stat-btn stat-dispo" id="stat-aj-b1" data-sid="aj-b1" onclick="openStatutMenu(this)">🟢 Disponible</button></td></tr>
+          <tr><td class="sid">B2</td><td><select class="sel-achb" data-field="aj-b2"></select></td><td><input type="text" class="inp-tel" data-field="aj-b2-tel" placeholder="Base ou 06…"/></td><td><button class="stat-btn stat-dispo" id="stat-aj-b2" data-sid="aj-b2" onclick="openStatutMenu(this)">🟢 Disponible</button></td></tr>
+          <tr><td class="sid">B3</td><td><select class="sel-achb" data-field="aj-b3"></select></td><td><input type="text" class="inp-tel" data-field="aj-b3-tel" placeholder="Base ou 06…"/></td><td><button class="stat-btn stat-dispo" id="stat-aj-b3" data-sid="aj-b3" onclick="openStatutMenu(this)">🟢 Disponible</button></td></tr>
+          <tr><td class="sid">VZ</td><td><select class="sel-avz" data-field="aj-vz"></select></td><td><input type="text" class="inp-tel" data-field="aj-vz-tel" placeholder="Base ou 06…"/></td><td><button class="stat-btn stat-dispo" id="stat-aj-vz" data-sid="aj-vz" onclick="openStatutMenu(this)">🟢 Disponible</button></td></tr>
+          <tr><td class="sid">St Amd</td><td><select class="sel-astam" data-field="aj-stam"></select></td><td><input type="text" class="inp-tel" data-field="aj-stam-tel" placeholder="Base ou 06…"/></td><td><button class="stat-btn stat-dispo" id="stat-aj-stam" data-sid="aj-stam" onclick="openStatutMenu(this)">🟢 Disponible</button></td></tr>
+          <tr><td class="sid">Nord</td><td><select class="sel-anord" data-field="aj-nord"></select></td><td><input type="text" class="inp-tel" data-field="aj-nord-tel" placeholder="Base ou 06…"/></td><td><button class="stat-btn stat-dispo" id="stat-aj-nord" data-sid="aj-nord" onclick="openStatutMenu(this)">🟢 Disponible</button></td></tr>
+          <tr><td class="sid">Est</td><td><select class="sel-aest" data-field="aj-est"></select></td><td><input type="text" class="inp-tel" data-field="aj-est-tel" placeholder="Base ou 06…"/></td><td><button class="stat-btn stat-dispo" id="stat-aj-est" data-sid="aj-est" onclick="openStatutMenu(this)">🟢 Disponible</button></td></tr>
         </tbody>
       </table>
     </div>
@@ -692,15 +765,15 @@ body.dark .at-dect{color:#79b8ff}
     <div class="card">
       <div class="ch ch-red" style="text-align:center;padding:9px 10px">🌙 &nbsp;Ambulances de Garde — Nuit</div>
       <table>
-        <thead><tr><th style="width:52px">Secteur</th><th>Ambulance</th><th>Téléphone</th></tr></thead>
+        <thead><tr><th style="width:52px">Secteur</th><th>Ambulance</th><th>Téléphone</th><th style="width:108px">Statut</th></tr></thead>
         <tbody>
-          <tr><td class="sid">B1</td><td><select class="sel-achb" data-field="an-b1"></select></td><td><input type="text" class="inp-tel" data-field="an-b1-tel" placeholder="Base ou 06…"/></td></tr>
-          <tr><td class="sid">B2</td><td><select class="sel-achb" data-field="an-b2"></select></td><td><input type="text" class="inp-tel" data-field="an-b2-tel" placeholder="Base ou 06…"/></td></tr>
-          <tr><td class="sid">B3</td><td><select class="sel-achb" data-field="an-b3"></select></td><td><input type="text" class="inp-tel" data-field="an-b3-tel" placeholder="Base ou 06…"/></td></tr>
-          <tr><td class="sid">VZ</td><td><select class="sel-avz" data-field="an-vz"></select></td><td><input type="text" class="inp-tel" data-field="an-vz-tel" placeholder="Base ou 06…"/></td></tr>
-          <tr><td class="sid">St Amd</td><td><select class="sel-astam" data-field="an-stam"></select></td><td><input type="text" class="inp-tel" data-field="an-stam-tel" placeholder="Base ou 06…"/></td></tr>
-          <tr><td class="sid">Nord</td><td><select class="sel-anord" data-field="an-nord"></select></td><td><input type="text" class="inp-tel" data-field="an-nord-tel" placeholder="Base ou 06…"/></td></tr>
-          <tr><td class="sid">Est</td><td><select class="sel-aest" data-field="an-est"></select></td><td><input type="text" class="inp-tel" data-field="an-est-tel" placeholder="Base ou 06…"/></td></tr>
+          <tr><td class="sid">B1</td><td><select class="sel-achb" data-field="an-b1"></select></td><td><input type="text" class="inp-tel" data-field="an-b1-tel" placeholder="Base ou 06…"/></td><td><button class="stat-btn stat-dispo" id="stat-an-b1" data-sid="an-b1" onclick="openStatutMenu(this)">🟢 Disponible</button></td></tr>
+          <tr><td class="sid">B2</td><td><select class="sel-achb" data-field="an-b2"></select></td><td><input type="text" class="inp-tel" data-field="an-b2-tel" placeholder="Base ou 06…"/></td><td><button class="stat-btn stat-dispo" id="stat-an-b2" data-sid="an-b2" onclick="openStatutMenu(this)">🟢 Disponible</button></td></tr>
+          <tr><td class="sid">B3</td><td><select class="sel-achb" data-field="an-b3"></select></td><td><input type="text" class="inp-tel" data-field="an-b3-tel" placeholder="Base ou 06…"/></td><td><button class="stat-btn stat-dispo" id="stat-an-b3" data-sid="an-b3" onclick="openStatutMenu(this)">🟢 Disponible</button></td></tr>
+          <tr><td class="sid">VZ</td><td><select class="sel-avz" data-field="an-vz"></select></td><td><input type="text" class="inp-tel" data-field="an-vz-tel" placeholder="Base ou 06…"/></td><td><button class="stat-btn stat-dispo" id="stat-an-vz" data-sid="an-vz" onclick="openStatutMenu(this)">🟢 Disponible</button></td></tr>
+          <tr><td class="sid">St Amd</td><td><select class="sel-astam" data-field="an-stam"></select></td><td><input type="text" class="inp-tel" data-field="an-stam-tel" placeholder="Base ou 06…"/></td><td><button class="stat-btn stat-dispo" id="stat-an-stam" data-sid="an-stam" onclick="openStatutMenu(this)">🟢 Disponible</button></td></tr>
+          <tr><td class="sid">Nord</td><td><select class="sel-anord" data-field="an-nord"></select></td><td><input type="text" class="inp-tel" data-field="an-nord-tel" placeholder="Base ou 06…"/></td><td><button class="stat-btn stat-dispo" id="stat-an-nord" data-sid="an-nord" onclick="openStatutMenu(this)">🟢 Disponible</button></td></tr>
+          <tr><td class="sid">Est</td><td><select class="sel-aest" data-field="an-est"></select></td><td><input type="text" class="inp-tel" data-field="an-est-tel" placeholder="Base ou 06…"/></td><td><button class="stat-btn stat-dispo" id="stat-an-est" data-sid="an-est" onclick="openStatutMenu(this)">🟢 Disponible</button></td></tr>
         </tbody>
       </table>
     </div>
@@ -918,6 +991,63 @@ body.dark .at-dect{color:#79b8ff}
 <script src="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.min.js"></script>
 <!-- ═══ SCRIPT ═══════════════════════════════════════════════════════ -->
 <script>
+/* ═══════════════════════ NUMÉROS BASE AMBULANCES ══════════════════════ */
+var AMBU_PHONES = {
+  '2000':'02-48-21-14-00','André':'02-48-71-49-44','Atlas':'02-48-68-06-86',
+  'Avaricum':'02-48-67-04-91','Bengy':'02-48-59-10-55','JHL':'02-48-58-39-38',
+  'Mazer':'02-48-20-13-25','Millérioux':'02-48-72-14-47','Marquet':'02-48-26-74-24',
+  'Mehun':'02-48-57-77-57','Petitjean':'02-48-75-38-18','Pinson':'02-48-24-44-45',
+  'St Amand':'02-48-96-62-21','St Exupéry':'02-48-75-33-75','VMA':'02-48-55-15-99',
+  'Auger':'02-48-74-52-08','Ducreux':'02-48-60-50-45','Savignat':'02-48-96-45-30'
+};
+var AMBU_TEL_FIELDS = [
+  'aj-b1','aj-b2','aj-b3','aj-vz','aj-stam','aj-nord','aj-est',
+  'an-b1','an-b2','an-b3','an-vz','an-stam','an-nord','an-est',
+  'ambu-sortie','ambu-ght'
+];
+function getAmbuPhone(name) {
+  if (!name) return '';
+  var up = name.toUpperCase();
+  var keys = Object.keys(AMBU_PHONES);
+  for (var i = 0; i < keys.length; i++)
+    if (up.indexOf(keys[i].toUpperCase()) !== -1) return AMBU_PHONES[keys[i]];
+  return '';
+}
+function injectBaseButtons() {
+  AMBU_TEL_FIELDS.forEach(function(field) {
+    var telEl = document.querySelector('input[data-field="' + field + '-tel"]');
+    if (!telEl || telEl.dataset.baseBtn) return;
+    telEl.dataset.baseBtn = '1';
+    var td = telEl.parentNode;
+    if (td) td.style.cssText += ';display:flex;align-items:center;gap:4px';
+    var btn = document.createElement('button');
+    btn.type = 'button';
+    btn.className = 'btn-base-fill';
+    btn.title = 'Remplir avec le numéro de base de l\'ambulance';
+    btn.innerHTML = '🏠 Base';
+    (function(f, t, b) {
+      b.addEventListener('click', function() {
+        var selEl = document.querySelector('select[data-field="' + f + '"]');
+        if (!selEl || !selEl.value) {
+          b.className = 'btn-base-fill err'; b.innerHTML = '⚠ Choisir d\'abord';
+          setTimeout(function(){ b.className='btn-base-fill'; b.innerHTML='🏠 Base'; }, 1500);
+          return;
+        }
+        var phone = getAmbuPhone(selEl.value);
+        if (phone) {
+          t.value = phone; t.dataset.auto = '1'; scheduleAutoSave();
+          b.className = 'btn-base-fill ok'; b.innerHTML = '✔ OK';
+          setTimeout(function(){ b.className='btn-base-fill'; b.innerHTML='🏠 Base'; }, 1500);
+        } else {
+          b.className = 'btn-base-fill err'; b.innerHTML = '✘ Inconnu';
+          setTimeout(function(){ b.className='btn-base-fill'; b.innerHTML='🏠 Base'; }, 1500);
+        }
+      });
+    })(field, telEl, btn);
+    td.appendChild(btn);
+  });
+}
+
 /* ═══════════════════════ DEFAULT DATA ════════════════════════════════ */
 const DEF_LISTS_VERSION = "2026-v2";
 const DEF_LISTS = {
@@ -1861,6 +1991,253 @@ function updateProgress() {
 }
 setInterval(updateProgress, 1000);
 
+/* ═══════════════════════ FICHE INFO DOUBLE-CLIC ═════════════════════ */
+function getDectForName(name) {
+  if (!name) return '';
+  var keys = Object.keys(LISTS);
+  for (var i = 0; i < keys.length; i++) {
+    var arr = LISTS[keys[i]];
+    for (var j = 0; j < arr.length; j++) {
+      if (arr[j].nom === name && arr[j].dect) return arr[j].dect;
+    }
+  }
+  return '';
+}
+
+function showInfoCard(el, name) {
+  var existing = document.getElementById('info-card');
+  if (existing) existing.remove();
+  if (!name) return;
+  var dect  = getDectForName(name);
+  var phone = getAmbuPhone(name);
+  if (!dect && !phone) return; /* rien à afficher */
+
+  var card = document.createElement('div');
+  card.id = 'info-card';
+  card.className = 'info-card';
+  card.style.position = 'fixed';
+
+  var rect = el.getBoundingClientRect();
+  var top  = Math.min(rect.bottom + 4, window.innerHeight - 140);
+  var left = Math.min(rect.left, window.innerWidth - 250);
+  card.style.top  = top  + 'px';
+  card.style.left = left + 'px';
+
+  var html = '<div class="ic-name">' + name + '</div>';
+  if (dect)  html += '<div class="ic-row"><span class="ic-lbl">DECT</span><span class="ic-dect">' + dect + '</span></div>';
+  if (phone) html += '<div class="ic-row"><span class="ic-lbl">Base</span><a class="ic-tel" href="tel:' + phone.replace(/-/g,'') + '">' + phone + '</a></div>';
+  html += '<button class="ic-close" onclick="document.getElementById(\'info-card\').remove()">✕</button>';
+  card.innerHTML = html;
+  document.body.appendChild(card);
+
+  setTimeout(function() {
+    document.addEventListener('click', function closeCard(e) {
+      var c = document.getElementById('info-card');
+      if (c && !c.contains(e.target)) { c.remove(); document.removeEventListener('click', closeCard); }
+    });
+  }, 120);
+}
+
+/* Champs "nom de personne" (pas ambulances) qui ont droit au bouton ℹ️ */
+var INFO_FIELDS = [
+  'regj1-nom','regj2-nom','regn1-nom','regn2-nom',
+  'sp-med-nom','sp-ide-nom','sp-ambu-nom',
+  'ss-med-nom','ss-ide-nom','ss-ambu-nom',
+  'mrl1','mrl2','admin-garde'
+];
+
+function injectInfoButtons() {
+  INFO_FIELDS.forEach(function(field) {
+    var selEl = document.querySelector('select[data-field="' + field + '"]');
+    if (!selEl || selEl.dataset.infoBtn) return;
+    selEl.dataset.infoBtn = '1';
+    /* Passer le parent en flex */
+    var td = selEl.parentNode;
+    if (td) td.style.cssText += ';display:flex;align-items:center;gap:3px';
+    /* Créer le bouton ℹ️ */
+    var btn = document.createElement('button');
+    btn.type = 'button';
+    btn.title = 'Voir infos (DECT / téléphone)';
+    btn.style.cssText = 'flex-shrink:0;background:none;border:none;font-size:14px;cursor:pointer;opacity:.5;transition:.15s;padding:0 2px;line-height:1';
+    btn.textContent = 'ℹ️';
+    btn.addEventListener('mouseenter', function(){ btn.style.opacity='1'; });
+    btn.addEventListener('mouseleave', function(){ btn.style.opacity='.5'; });
+    (function(s, b) {
+      b.addEventListener('click', function(e) {
+        e.stopPropagation();
+        showInfoCard(s, s.value);
+      });
+      /* Mettre à jour la visibilité selon si un nom est sélectionné */
+      function updateVis() { b.style.display = s.value ? 'inline' : 'none'; }
+      s.addEventListener('change', updateVis);
+      updateVis();
+    })(selEl, btn);
+    td.appendChild(btn);
+  });
+}
+
+
+/* ═══════════════════════ ALERTE SECTEURS VIDES ══════════════════════ */
+var alerteDismissed = false;
+var alerteLastShift = '';
+
+function checkAlerteSecteurs() {
+  var now    = new Date();
+  var h      = now.getHours();
+  var m      = now.getMinutes();
+  var total  = h * 60 + m;
+
+  /* Fenêtres d'alerte : 7h30–8h00 (garde jour) et 19h30–20h00 (garde nuit) */
+  var isJourWindow = (total >= 450 && total < 480);   /* 7h30–8h00 */
+  var isNuitWindow = (total >= 1170 && total < 1200); /* 19h30–20h00 */
+  var shiftKey     = isJourWindow ? 'jour' : (isNuitWindow ? 'nuit' : '');
+
+  var bannerEl  = document.getElementById('alerte-garde');
+  var titreEl   = document.getElementById('alerte-garde-titre');
+  var sectorsEl = document.getElementById('alerte-garde-sectors');
+  if (!bannerEl) return;
+
+  /* Hors fenêtre → masquer et réarmer le dismiss */
+  if (!shiftKey) {
+    bannerEl.style.display = 'none';
+    if (alerteLastShift !== shiftKey) { alerteDismissed = false; alerteLastShift = shiftKey; }
+    return;
+  }
+
+  /* Nouvelle fenêtre → réarmer */
+  if (alerteLastShift !== shiftKey) { alerteDismissed = false; alerteLastShift = shiftKey; }
+  if (alerteDismissed) return;
+
+  /* Vérifier les secteurs vides pour la garde à venir */
+  var sectorsVides = [];
+  SECTEURS.forEach(function(s) {
+    var field = shiftKey === 'nuit' ? s.fieldN : s.fieldJ;
+    if (!getFieldVal(field)) sectorsVides.push(s.label);
+  });
+
+  if (!sectorsVides.length) {
+    bannerEl.style.display = 'none';
+    return;
+  }
+
+  /* Calcul des minutes restantes */
+  var cible   = shiftKey === 'jour' ? 480 : 1200;
+  var restant = cible - total;
+  var urgente = restant <= 10;
+
+  var gardeLabel = shiftKey === 'jour' ? 'la garde JOUR (8h00)' : 'la garde NUIT (20h00)';
+  titreEl.textContent = '⚠ ' + sectorsVides.length + ' secteur' +
+    (sectorsVides.length > 1 ? 's' : '') + ' sans ambulance — ' +
+    restant + ' min avant ' + gardeLabel;
+  sectorsEl.textContent = 'Secteurs non affectés : ' + sectorsVides.join(', ');
+
+  bannerEl.className = 'alerte-garde' + (urgente ? ' alerte-urgente' : '');
+  bannerEl.style.display = 'block';
+}
+
+function dismissAlerte() {
+  alerteDismissed = true;
+  var el = document.getElementById('alerte-garde');
+  if (el) el.style.display = 'none';
+}
+
+setInterval(checkAlerteSecteurs, 30000); /* vérifier toutes les 30 secondes */
+
+/* ═══════════════════════ STATUT ÉQUIPES AMBULANCES ══════════════════ */
+var FIREBASE_STATUTS_PATH = 'garde/statuts';
+var fbStatutsRef = null;
+var statutApplying = false;
+var statutPopupTarget = null;
+
+var STATUTS_DEF = [
+  {key:'dispo',      label:'🟢 Disponible',  cls:'stat-dispo'},
+  {key:'sll',        label:'🟠 SLL',          cls:'stat-sll'},
+  {key:'bilan',      label:'🔵 Bilan',        cls:'stat-bilan'},
+  {key:'transport',  label:'🟣 Transport CH', cls:'stat-transport'},
+  {key:'indispo',    label:'🔴 Indisponible', cls:'stat-indispo'},
+  {key:'pause',      label:'🟡 Pause repas',  cls:'stat-pause'}
+];
+
+var ALL_STAT_FIELDS = [
+  'aj-b1','aj-b2','aj-b3','aj-vz','aj-stam','aj-nord','aj-est',
+  'an-b1','an-b2','an-b3','an-vz','an-stam','an-nord','an-est'
+];
+
+function initStatutFirebase() {
+  if (!fbDb) return;
+  fbStatutsRef = fbDb.ref(FIREBASE_STATUTS_PATH);
+  fbStatutsRef.on('value', function(snap) {
+    if (statutApplying) return;
+    var data = snap.val() || {};
+    ALL_STAT_FIELDS.forEach(function(sid) {
+      applyStatutBtn(sid, data[sid] || 'dispo');
+    });
+  });
+}
+
+var STATUT_ROW_COLORS = {
+  dispo:     'rgba(40,180,80,.30)',
+  sll:       'rgba(255,140,0,.42)',
+  bilan:     'rgba(30,120,220,.35)',
+  transport: 'rgba(140,50,200,.32)',
+  indispo:   'rgba(220,50,50,.38)',
+  pause:     'rgba(240,200,0,.40)'
+};
+
+function applyStatutBtn(sid, key) {
+  var btn = document.getElementById('stat-' + sid);
+  if (!btn) return;
+  var s = null;
+  for (var i = 0; i < STATUTS_DEF.length; i++) { if (STATUTS_DEF[i].key === key) { s = STATUTS_DEF[i]; break; } }
+  if (!s) s = STATUTS_DEF[0];
+  STATUTS_DEF.forEach(function(x){ btn.classList.remove(x.cls); });
+  btn.classList.add(s.cls);
+  btn.textContent = s.label;
+  /* Colorer toute la ligne */
+  var tr = btn.closest('tr');
+  if (tr) tr.style.background = STATUT_ROW_COLORS[key] || '';
+}
+
+function openStatutMenu(btn) {
+  var popup = document.getElementById('stat-popup');
+  if (!popup) return;
+  if (statutPopupTarget === btn && popup.classList.contains('open')) { closeStatutMenu(); return; }
+  statutPopupTarget = btn;
+  var rect = btn.getBoundingClientRect();
+  var top = rect.bottom + 4;
+  var left = Math.min(rect.left, window.innerWidth - 170);
+  if (top + 210 > window.innerHeight) top = rect.top - 214;
+  popup.style.top = top + 'px';
+  popup.style.left = left + 'px';
+  popup.classList.add('open');
+}
+
+function closeStatutMenu() {
+  var popup = document.getElementById('stat-popup');
+  if (popup) popup.classList.remove('open');
+  statutPopupTarget = null;
+}
+
+function setStatut(key) {
+  if (!statutPopupTarget) return;
+  var sid = statutPopupTarget.getAttribute('data-sid');
+  closeStatutMenu();
+  applyStatutBtn(sid, key);
+  if (fbStatutsRef) {
+    statutApplying = true;
+    var upd = {}; upd[sid] = key;
+    fbStatutsRef.update(upd).then(function(){ statutApplying = false; }).catch(function(){ statutApplying = false; });
+  }
+}
+
+document.addEventListener('click', function(e) {
+  var popup = document.getElementById('stat-popup');
+  if (!popup || !popup.classList.contains('open')) return;
+  if (!popup.contains(e.target) && !(statutPopupTarget && statutPopupTarget.contains(e.target))) {
+    closeStatutMenu();
+  }
+});
+
 /* ═══════════════════════ MODE SOMBRE ════════════════════════════════ */
 function toggleDark() {
   var isDark = document.body.classList.toggle('dark');
@@ -2268,7 +2645,7 @@ function closeSmurModal() {
   if (ov) { ov.classList.remove('open'); document.body.style.overflow = ''; }
 }
 document.addEventListener('keydown', function(e) {
-  if (e.key === 'Escape') { closeSmurModal(); closeResume(); closeCarte(); closeAppelRapide(); closeRotation(); closeAide(); }
+  if (e.key === 'Escape') { closeSmurModal(); closeResume(); closeCarte(); closeAppelRapide(); closeRotation(); closeAide(); closeQrCode(); var ic=document.getElementById('info-card'); if(ic) ic.remove(); }
 });
 
 /* ═══════════════════════ INIT ════════════════════════════════════════ */
@@ -2278,6 +2655,10 @@ document.addEventListener('DOMContentLoaded', function() {
   renderPharmGarde();
   updateProgress();
   checkAutoRotation();
+  injectBaseButtons();
+  injectInfoButtons();
+  initStatutFirebase();
+  checkAlerteSecteurs();
   // Restaurer préférence dark mode
   try {
     if (localStorage.getItem('garde_dark') === '1') {
@@ -2443,6 +2824,17 @@ document.addEventListener('DOMContentLoaded', function() {
 
     </div>
   </div>
+</div>
+
+
+<!-- ═══ POPUP STATUT AMBULANCE ═════════════════════════════════════════ -->
+<div class="stat-popup" id="stat-popup">
+  <button class="stat-dispo"    onclick="setStatut('dispo')">🟢 Disponible</button>
+  <button class="stat-sll"      onclick="setStatut('sll')">🟠 SLL</button>
+  <button class="stat-bilan"    onclick="setStatut('bilan')">🔵 Bilan</button>
+  <button class="stat-transport" onclick="setStatut('transport')">🟣 Transport CH</button>
+  <button class="stat-indispo"  onclick="setStatut('indispo')">🔴 Indisponible</button>
+  <button class="stat-pause"    onclick="setStatut('pause')">🟡 Pause repas</button>
 </div>
 
 <!-- ═══ MODAL RÉSUMÉ GARDE ════════════════════════════════════════════ -->
