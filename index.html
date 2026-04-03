@@ -8,7 +8,6 @@
 <!-- Firebase SDK -->
 <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-database-compat.js"></script>
-<script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-auth-compat.js"></script>
 <style>
 *,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
 body{font-family:'Segoe UI',Arial,sans-serif;font-size:13px;background:#eef1f6;color:#1a1a2e;min-height:100vh;padding:14px}
@@ -417,10 +416,11 @@ body.dark .pharm-nm{color:#c9d1d9}
 .at-copied-msg{font-size:9px;color:#2a7a3b;font-weight:700;margin-top:5px}
 .appel-empty{text-align:center;padding:36px;color:#aaa;font-size:13px}
 
-/* ══ Modal Rotation / Modèles ════════════════════════════════════════ */
-.rot-modal-overlay{display:none;position:fixed;inset:0;background:rgba(10,20,50,.65);backdrop-filter:blur(3px);z-index:9003;align-items:center;justify-content:center;padding:18px}
-.rot-modal-overlay.open{display:flex}
-.rot-modal-box{background:#fff;border-radius:12px;width:100%;max-width:660px;box-shadow:0 12px 48px rgba(0,0,0,.4);animation:smurFadeIn .18s ease;max-height:92vh;display:flex;flex-direction:column;overflow:hidden}
+/* ══ Modal Rotation / Modèles — panneau latéral droit ════════════════ */
+.rot-modal-overlay{display:none;position:fixed;top:0;right:0;bottom:0;width:min(460px,100vw);z-index:9003;pointer-events:none}
+.rot-modal-overlay.open{display:block}
+.rot-modal-box{position:absolute;top:0;right:0;bottom:0;width:100%;background:#fff;border-radius:12px 0 0 12px;box-shadow:-6px 0 40px rgba(0,0,0,.22);display:flex;flex-direction:column;overflow:hidden;pointer-events:all;animation:slideInRight .22s ease}
+@keyframes slideInRight{from{transform:translateX(100%);opacity:0}to{transform:translateX(0);opacity:1}}
 .rot-modal-hd{background:linear-gradient(135deg,#1b3a6b,#2d5aa0);color:#fff;padding:12px 18px;display:flex;align-items:center;justify-content:space-between;border-bottom:3px solid #e8b400;flex-shrink:0}
 .rot-modal-hd .ttl{font-size:13px;font-weight:700;letter-spacing:.8px;text-transform:uppercase}
 .rot-modal-hd button{background:rgba(255,255,255,.15);border:1px solid rgba(255,255,255,.4);color:#fff;border-radius:50%;width:28px;height:28px;font-size:16px;cursor:pointer;display:flex;align-items:center;justify-content:center}
@@ -473,23 +473,6 @@ body.dark .at-body{background:#161b22}
 body.dark .at-name{color:#c9d1d9}
 body.dark .at-dect{color:#79b8ff}
 
-/* ── Auth overlay ── */
-.auth-overlay{position:fixed;inset:0;background:rgba(10,15,28,.92);z-index:2000;display:flex;align-items:center;justify-content:center}
-.auth-box{background:#fff;border-radius:14px;padding:36px 40px;text-align:center;box-shadow:0 8px 40px rgba(0,0,0,.4);max-width:340px;width:90%}
-.auth-box .auth-logo{font-size:42px;margin-bottom:10px}
-.auth-box h2{font-size:16px;font-weight:700;color:#1a2130;margin-bottom:6px}
-.auth-box p{font-size:12px;color:#6a7f9a;margin-bottom:22px;line-height:1.5}
-.btn-google{display:inline-flex;align-items:center;gap:10px;background:#fff;border:1.5px solid #d0d9ea;border-radius:24px;padding:10px 22px;font-size:13px;font-weight:700;color:#1a2130;cursor:pointer;transition:.15s;box-shadow:0 2px 8px rgba(0,0,0,.08)}
-.btn-google:hover{background:#f0f4fa;box-shadow:0 4px 14px rgba(0,0,0,.13)}
-.btn-google svg{width:20px;height:20px;flex-shrink:0}
-.auth-error{margin-top:14px;font-size:12px;color:#dc2626;display:none}
-/* user chip in save-bar */
-.fb-user-chip{display:inline-flex;align-items:center;gap:6px;background:rgba(34,197,94,.1);border:1px solid rgba(34,197,94,.3);border-radius:20px;padding:3px 10px 3px 5px;font-size:11px;font-weight:700;color:#16a34a;margin-left:4px}
-.fb-user-chip img{width:20px;height:20px;border-radius:50%;object-fit:cover}
-.btn-signout{background:transparent;border:1px solid #d0d9ea;border-radius:20px;padding:3px 10px;font-size:11px;font-weight:700;cursor:pointer;color:#6a7f9a;transition:.15s;margin-left:2px}
-.btn-signout:hover{background:#fee2e2;color:#dc2626;border-color:#fca5a5}
-body.dark .fb-user-chip{background:rgba(34,197,94,.12);border-color:rgba(34,197,94,.25);color:#22c55e}
-body.dark .btn-signout{border-color:#2d3f58;color:#8899b0}
 
 /* ── Print ── */
 @media print{
@@ -504,19 +487,6 @@ body.dark .btn-signout{border-color:#2d3f58;color:#8899b0}
 </head>
 <body>
 
-<!-- ═══ AUTH OVERLAY — affiché tant que l'utilisateur n'est pas connecté ═ -->
-<div class="auth-overlay" id="auth-overlay">
-  <div class="auth-box">
-    <div class="auth-logo">🏥</div>
-    <h2>Tableau de Garde — Hôpital</h2>
-    <p>Connectez-vous avec votre compte Google pour accéder au tableau et activer la synchronisation en temps réel.</p>
-    <button class="btn-google" onclick="signInWithGoogle()">
-      <svg viewBox="0 0 48 48"><path fill="#4285F4" d="M44.5 20H24v8.5h11.8C34.7 33.9 30.1 37 24 37c-7.2 0-13-5.8-13-13s5.8-13 13-13c3.1 0 5.9 1.1 8.1 2.9l6.4-6.4C34.6 4.1 29.6 2 24 2 11.8 2 2 11.8 2 24s9.8 22 22 22c11 0 21-8 21-22 0-1.3-.2-2.7-.5-4z"/><path fill="#34A853" d="M6.3 14.7l7 5.1C15 16.1 19.1 13 24 13c3.1 0 5.9 1.1 8.1 2.9l6.4-6.4C34.6 4.1 29.6 2 24 2 16.3 2 9.7 7.4 6.3 14.7z"/><path fill="#FBBC05" d="M24 46c5.5 0 10.5-1.9 14.3-5l-6.6-5.4C29.7 37 27 38 24 38c-6 0-10.6-3.9-11.7-9l-7 5.4C8.5 41.7 15.7 46 24 46z"/><path fill="#EA4335" d="M44.5 20H24v8.5h11.8c-.9 2.6-2.6 4.8-4.8 6.3l6.6 5.4C41.8 36.8 44.5 30.9 44.5 24c0-1.3-.2-2.7-.5-4z"/></svg>
-      Continuer avec Google
-    </button>
-    <div class="auth-error" id="auth-error">Connexion échouée. Veuillez réessayer.</div>
-  </div>
-</div>
 
 <div class="page">
 
@@ -565,11 +535,6 @@ body.dark .btn-signout{border-color:#2d3f58;color:#8899b0}
   <button class="btn-aide" onclick="openAide()">❓ Aide</button>
   <span class="save-status" id="save-status">✔ Sauvegardé</span>
   <span id="fb-status" style="font-size:11px;font-weight:700;margin-left:6px;color:#ef4444;display:inline-flex;align-items:center;gap:2px" title="Firebase non configuré"><span style="display:inline-block;width:8px;height:8px;border-radius:50%;background:#ef4444;margin-right:4px"></span>Hors ligne</span>
-  <span id="fb-user-chip" class="fb-user-chip" style="display:none">
-    <img id="fb-user-photo" src="" alt=""/>
-    <span id="fb-user-name"></span>
-  </span>
-  <button class="btn-signout" id="btn-signout" style="display:none" onclick="signOut()">Déconnexion</button>
 </div>
 
 <!-- ═══ MAIN GRID ════════════════════════════════════════════════════ -->
@@ -740,6 +705,12 @@ body.dark .btn-signout{border-color:#2d3f58;color:#8899b0}
       </table>
     </div>
 
+
+    <!-- ══════════════════════════════════════════════════════════════
+         EMPLACEMENT NOUVELLE SECTION — COLONNE CENTRE
+         Collez votre nouvelle carte ici ↓
+    ═══════════════════════════════════════════════════════════════ -->
+
   </div><!-- /col-center -->
 
   <!-- ══ COLONNE DROITE ════════════════════════════════════════════ -->
@@ -799,6 +770,11 @@ body.dark .btn-signout{border-color:#2d3f58;color:#8899b0}
         <textarea data-field="notes-jour" style="width:100%;height:78px;border:1px solid #d0d9ea;border-radius:5px;padding:6px;font-size:12px;font-family:inherit;resize:vertical;outline:none" placeholder="Notes, informations…"></textarea>
       </div>
     </div>
+
+    <!-- ══════════════════════════════════════════════════════════════
+         EMPLACEMENT NOUVELLE SECTION — COLONNE DROITE
+         Collez votre nouvelle carte ici ↓
+    ═══════════════════════════════════════════════════════════════ -->
 
     <div class="card" style="text-align:center;padding:4px 0">
       <a href="#" class="action-btn ab-retour">
@@ -1207,98 +1183,51 @@ function initFirebase() {
     fbApp = firebase.initializeApp(FIREBASE_CONFIG);
     fbDb  = firebase.database();
 
-    /* Surveiller l'état d'authentification */
-    firebase.auth().onAuthStateChanged(function(user) {
-      if (user) {
-        /* Utilisateur connecté → masquer l'overlay, activer la DB */
-        var overlay = document.getElementById('auth-overlay');
-        if (overlay) overlay.style.display = 'none';
+    /* Connexion directe Realtime Database */
+    fbRef      = fbDb.ref(FIREBASE_PATH);
+    fbListsRef = fbDb.ref(FIREBASE_LISTS_PATH);
 
-        /* Afficher le chip utilisateur */
-        var chip  = document.getElementById('fb-user-chip');
-        var photo = document.getElementById('fb-user-photo');
-        var name  = document.getElementById('fb-user-name');
-        var btn   = document.getElementById('btn-signout');
-        if (chip)  chip.style.display  = 'inline-flex';
-        if (btn)   btn.style.display   = 'inline-flex';
-        if (photo && user.photoURL)  photo.src = user.photoURL;
-        if (name)  name.textContent    = user.displayName || user.email;
+    fbDb.ref('.info/connected').on('value', function(snap) {
+      fbReady = snap.val() === true;
+      setFbStatus(fbReady ? 'online' : 'offline');
+    });
 
-        /* Connexion Realtime Database */
-        fbRef      = fbDb.ref(FIREBASE_PATH);
-        fbListsRef = fbDb.ref(FIREBASE_LISTS_PATH);
+    /* Écoute temps réel — état du tableau */
+    fbRef.on('value', function(snap) {
+      if (fbApplying) return;
+      var data = snap.val();
+      if (!data) return;
+      fbApplying = true;
+      document.querySelectorAll('[data-field]').forEach(function(el) {
+        var key = el.dataset.field;
+        if (data[key] !== undefined && data[key] !== null) {
+          el.value = data[key];
+        }
+      });
+      try { localStorage.setItem('garde_state', JSON.stringify(data)); } catch(e) {}
+      refreshLeftDisplay();
+      fbApplying = false;
+    });
 
-        fbDb.ref('.info/connected').on('value', function(snap) {
-          fbReady = snap.val() === true;
-          setFbStatus(fbReady ? 'online' : 'offline');
-        });
-
-        /* Écoute temps réel — état du tableau */
-        fbRef.on('value', function(snap) {
-          if (fbApplying) return;
-          var data = snap.val();
-          if (!data) return;
-          fbApplying = true;
-          document.querySelectorAll('[data-field]').forEach(function(el) {
-            var key = el.dataset.field;
-            if (data[key] !== undefined && data[key] !== null) {
-              el.value = data[key];
-            }
-          });
-          try { localStorage.setItem('garde_state', JSON.stringify(data)); } catch(e) {}
-          refreshLeftDisplay();
-          fbApplying = false;
-        });
-
-        /* Écoute temps réel — listes de référence */
-        fbListsRef.on('value', function(snap) {
-          if (fbListsApplying) return;
-          var data = snap.val();
-          if (!data) return;
-          fbListsApplying = true;
-          /* Fusionner avec DEF_LISTS pour ne pas perdre de noms par défaut */
-          Object.keys(data).forEach(function(key) {
-            LISTS[key] = data[key];
-          });
-          try { localStorage.setItem('garde_lists', JSON.stringify(LISTS)); } catch(e) {}
-          populateAll();
-          if (refOpen) renderAllRefLists();
-          fbListsApplying = false;
-        });
-
-      } else {
-        /* Non connecté → afficher l'overlay */
-        var overlay = document.getElementById('auth-overlay');
-        if (overlay) overlay.style.display = 'flex';
-        var chip = document.getElementById('fb-user-chip');
-        var btn  = document.getElementById('btn-signout');
-        if (chip) chip.style.display = 'none';
-        if (btn)  btn.style.display  = 'none';
-        if (fbRef)      { fbRef.off();      fbRef      = null; }
-        if (fbListsRef) { fbListsRef.off(); fbListsRef = null; }
-        fbReady = false;
-        setFbStatus('offline');
-      }
+    /* Écoute temps réel — listes de référence */
+    fbListsRef.on('value', function(snap) {
+      if (fbListsApplying) return;
+      var data = snap.val();
+      if (!data) return;
+      fbListsApplying = true;
+      Object.keys(data).forEach(function(key) {
+        LISTS[key] = data[key];
+      });
+      try { localStorage.setItem('garde_lists', JSON.stringify(LISTS)); } catch(e) {}
+      populateAll();
+      if (refOpen) renderAllRefLists();
+      fbListsApplying = false;
     });
 
   } catch(e) {
     console.warn("Firebase init error:", e);
     setFbStatus('offline');
   }
-}
-
-function signInWithGoogle() {
-  var provider = new firebase.auth.GoogleAuthProvider();
-  firebase.auth().signInWithPopup(provider).catch(function(err) {
-    var el = document.getElementById('auth-error');
-    if (el) { el.style.display = 'block'; el.textContent = 'Erreur : ' + err.message; }
-    console.warn('Auth error:', err);
-  });
-}
-
-function signOut() {
-  if (!confirm('Se déconnecter du tableau ?')) return;
-  firebase.auth().signOut();
 }
 
 function setFbStatus(status) {
@@ -1704,11 +1633,11 @@ function openRotation() {
   var chk = document.getElementById('rot-auto-chk');
   try { if (chk) chk.checked = localStorage.getItem('garde_rot_auto') === '1'; } catch(e) {}
   var ov = document.getElementById('rot-modal');
-  if (ov) { ov.classList.add('open'); document.body.style.overflow = 'hidden'; }
+  if (ov) ov.classList.add('open');
 }
 function closeRotation() {
   var ov = document.getElementById('rot-modal');
-  if (ov) { ov.classList.remove('open'); document.body.style.overflow = ''; }
+  if (ov) ov.classList.remove('open');
 }
 function switchRotTab(tab) {
   document.querySelectorAll('.rot-tab').forEach(function(t,i) {
@@ -2126,28 +2055,57 @@ function printResume() {
 }
 
 /* ═══════════════════════ CARTE DES SECTEURS ════════════════════════ */
-var carteMap = null;
+var carteMap        = null;
 var carteLayerGroup = null;
-var carteShift = 'jour';
+var communesLayer   = null;
+var communesLoaded  = false;
+var carteShift      = 'jour';
 
+/* Secteurs — polygones de référence pour l'affectation des communes */
 var SECTEURS = [
-  { id:'B1',  label:'Bourges B1',    color:'#2d5aa0', fieldJ:'aj-b1',   fieldN:'an-b1',
-    coords:[[47.09,2.28],[47.22,2.28],[47.22,2.48],[47.09,2.48]] },
-  { id:'B2',  label:'Bourges B2',    color:'#1b3a6b', fieldJ:'aj-b2',   fieldN:'an-b2',
-    coords:[[46.95,2.28],[47.09,2.28],[47.09,2.48],[46.95,2.48]] },
-  { id:'B3',  label:'Bourges B3',    color:'#5b8dee', fieldJ:'aj-b3',   fieldN:'an-b3',
-    coords:[[47.09,2.48],[47.28,2.48],[47.28,2.72],[47.09,2.72]] },
-  { id:'VZ',  label:'Vierzon',       color:'#2a7a3b', fieldJ:'aj-vz',   fieldN:'an-vz',
-    coords:[[47.05,1.88],[47.45,1.88],[47.45,2.28],[47.05,2.28]] },
-  { id:'St Amd', label:'St-Amand',   color:'#c8760a', fieldJ:'aj-stam', fieldN:'an-stam',
-    coords:[[46.58,2.28],[46.95,2.28],[46.95,2.72],[46.58,2.72]] },
-  { id:'Nord',label:'Nord',          color:'#7c3fa0', fieldJ:'aj-nord', fieldN:'an-nord',
-    coords:[[47.28,2.15],[47.58,2.15],[47.58,3.08],[47.28,3.08]] },
-  { id:'Est', label:'Est',           color:'#1a7a7a', fieldJ:'aj-est',  fieldN:'an-est',
-    coords:[[46.95,2.72],[47.28,2.72],[47.28,3.08],[46.95,3.08]] },
-  { id:'Sud', label:'Sud',           color:'#b82222', fieldJ:'aj-sud',  fieldN:'an-sud',
-    coords:[[46.58,2.72],[46.95,2.72],[46.95,3.08],[46.58,3.08]] }
+  { id:'B1',     label:'Bourges B1',  color:'#2d5aa0', fieldJ:'aj-b1',   fieldN:'an-b1',
+    coords:[[47.065,2.295],[47.185,2.295],[47.195,2.360],[47.175,2.455],[47.085,2.500],[47.065,2.440]] },
+  { id:'B2',     label:'Bourges B2',  color:'#1b3a6b', fieldJ:'aj-b2',   fieldN:'an-b2',
+    coords:[[46.940,2.260],[47.065,2.260],[47.065,2.440],[46.960,2.460],[46.940,2.380]] },
+  { id:'B3',     label:'Bourges B3',  color:'#5b8dee', fieldJ:'aj-b3',   fieldN:'an-b3',
+    coords:[[47.065,2.455],[47.195,2.455],[47.265,2.620],[47.220,2.730],[47.100,2.720],[47.065,2.550]] },
+  { id:'VZ',     label:'Vierzon',     color:'#2a7a3b', fieldJ:'aj-vz',   fieldN:'an-vz',
+    coords:[[47.105,1.820],[47.560,1.820],[47.580,2.050],[47.510,2.260],[47.360,2.380],[47.210,2.380],[47.105,2.260]] },
+  { id:'St Amd', label:'St-Amand',    color:'#c8760a', fieldJ:'aj-stam', fieldN:'an-stam',
+    coords:[[46.500,2.130],[46.940,2.130],[46.960,2.460],[46.940,2.720],[46.760,2.740],[46.540,2.660],[46.500,2.380]] },
+  { id:'Nord',   label:'Nord',        color:'#7c3fa0', fieldJ:'aj-nord', fieldN:'an-nord',
+    coords:[[47.210,2.390],[47.560,2.390],[47.580,3.130],[47.360,3.130],[47.265,2.900],[47.220,2.730]] },
+  { id:'Est',    label:'Est',         color:'#1a7a7a', fieldJ:'aj-est',  fieldN:'an-est',
+    coords:[[46.940,2.720],[47.100,2.720],[47.220,2.730],[47.265,2.900],[47.200,3.130],[46.840,3.130],[46.760,2.740]] }
 ];
+
+/* ── Point-in-polygon (ray casting) — coords = [[lat,lng]…] ── */
+function pip(lat, lng, polygon) {
+  var inside = false;
+  for (var i = 0, j = polygon.length - 1; i < polygon.length; j = i++) {
+    var iLat = polygon[i][0], iLng = polygon[i][1];
+    var jLat = polygon[j][0], jLng = polygon[j][1];
+    if (((iLng > lng) !== (jLng > lng)) &&
+        (lat < (jLat - iLat) * (lng - iLng) / (jLng - iLng) + iLat))
+      inside = !inside;
+  }
+  return inside;
+}
+
+function getSecteur(lat, lng) {
+  for (var i = 0; i < SECTEURS.length; i++)
+    if (pip(lat, lng, SECTEURS[i].coords)) return SECTEURS[i];
+  return null;
+}
+
+/* Centroïde approximatif d'une géométrie GeoJSON (Polygon ou MultiPolygon) */
+function centroid(geom) {
+  var ring = geom.type === 'Polygon' ? geom.coordinates[0]
+           : geom.coordinates.reduce(function(a,b){ return a[0].length > b[0].length ? a : b; })[0];
+  var sLat = 0, sLng = 0;
+  ring.forEach(function(c){ sLng += c[0]; sLat += c[1]; });
+  return [sLat / ring.length, sLng / ring.length]; /* [lat, lng] */
+}
 
 function setCarteShift(shift) {
   carteShift = shift;
@@ -2155,18 +2113,16 @@ function setCarteShift(shift) {
   var bn = document.getElementById('carte-btn-nuit');
   if (bj) bj.className = shift === 'jour' ? 'active' : '';
   if (bn) bn.className = shift === 'nuit' ? 'active' : '';
-  updateCarte();
+  updateCarteLabels();
 }
 
 function openCarte() {
-  // Auto-détecter la garde selon l'heure
   var h = new Date().getHours();
   carteShift = (h >= 20 || h < 8) ? 'nuit' : 'jour';
   var bj = document.getElementById('carte-btn-jour');
   var bn = document.getElementById('carte-btn-nuit');
   if (bj) bj.className = carteShift === 'jour' ? 'active' : '';
   if (bn) bn.className = carteShift === 'nuit' ? 'active' : '';
-
   var ov = document.getElementById('carte-modal');
   if (ov) { ov.classList.add('open'); document.body.style.overflow = 'hidden'; }
   setTimeout(function() {
@@ -2185,15 +2141,56 @@ function initCarte() {
   if (!container) return;
   if (!carteMap) {
     carteMap = L.map('carte-map', { zoomControl:true, attributionControl:true })
-                .setView([47.08, 2.50], 9);
+                .setView([47.05, 2.55], 9);
     L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
       attribution:'© <a href="https://openstreetmap.org">OpenStreetMap</a>',
-      maxZoom:13
+      maxZoom:14
     }).addTo(carteMap);
   }
   carteMap.invalidateSize();
   buildLegend();
-  updateCarte();
+
+  if (!communesLoaded) {
+    communesLoaded = true;
+    /* Indicateur de chargement */
+    var info = document.getElementById('carte-loading');
+    if (info) info.style.display = 'block';
+
+    fetch('https://geo.api.gouv.fr/departements/18/communes?geometry=contour&format=geojson&fields=nom,code')
+      .then(function(r){ return r.json(); })
+      .then(function(data){
+        communesLayer = L.geoJSON(data, {
+          style: function(feature) {
+            var c = centroid(feature.geometry);
+            var sec = getSecteur(c[0], c[1]);
+            return {
+              color:       sec ? sec.color : '#888',
+              weight:      0.8,
+              opacity:     0.7,
+              fillColor:   sec ? sec.color : '#ccc',
+              fillOpacity: sec ? 0.22 : 0.05
+            };
+          },
+          onEachFeature: function(feature, layer) {
+            var c   = centroid(feature.geometry);
+            var sec = getSecteur(c[0], c[1]);
+            layer.bindTooltip(
+              '<b>' + feature.properties.nom + '</b>' +
+              (sec ? '<br><span style="color:' + sec.color + ';font-weight:700">⬤ ' + sec.label + '</span>' : ''),
+              { className:'carte-tip', sticky:true }
+            );
+          }
+        }).addTo(carteMap);
+        if (info) info.style.display = 'none';
+        updateCarteLabels();
+      })
+      .catch(function(){
+        if (info) info.style.display = 'none';
+        updateCarteLabels();
+      });
+  } else {
+    updateCarteLabels();
+  }
 }
 
 function buildLegend() {
@@ -2214,7 +2211,8 @@ function buildLegend() {
   });
 }
 
-function updateCarte() {
+/* Met à jour uniquement les étiquettes / badges sans recharger les communes */
+function updateCarteLabels() {
   if (!carteMap) return;
   if (carteLayerGroup) { carteLayerGroup.clearLayers(); } else {
     carteLayerGroup = L.layerGroup().addTo(carteMap);
@@ -2227,45 +2225,38 @@ function updateCarte() {
     var ambuN = getFieldVal(s.fieldN) || '—';
     var filled = ambu !== '';
 
-    // Polygone
-    var poly = L.polygon(s.coords, {
-      color: s.color, weight: 2.5, opacity: .9,
-      fillColor: s.color, fillOpacity: filled ? .38 : .08
-    });
-
-    poly.bindTooltip(
-      '<b>' + s.label + '</b><br>☀ Jour : ' + ambuJ + '<br>🌙 Nuit : ' + ambuN,
-      { className:'carte-tip', sticky:true }
-    );
-    poly.addTo(carteLayerGroup);
-
-    // Label centré
+    /* Badge central du secteur uniquement (pas de polygone) */
     var bounds = L.latLngBounds(s.coords);
     var center = bounds.getCenter();
-    var icon = L.divIcon({
-      className: 'carte-label',
-      html: '<div class="cl-inner">' +
-              '<div class="cl-sector">' + s.id + '</div>' +
-              '<div class="cl-ambu' + (filled ? '' : ' vide') + '">' +
-                (filled ? ambu : 'Non affecté') +
-              '</div>' +
-            '</div>',
-      iconSize: [100, 36],
-      iconAnchor: [50, 18]
-    });
-    L.marker(center, { icon:icon, interactive:false }).addTo(carteLayerGroup);
+    L.marker(center, {
+      icon: L.divIcon({
+        className: 'carte-label',
+        html: '<div class="cl-inner" style="border-color:' + s.color + ';background:rgba(255,255,255,.92)">' +
+                '<div class="cl-sector" style="color:' + s.color + '">' + s.id + '</div>' +
+                '<div class="cl-ambu' + (filled ? '' : ' vide') + '">' +
+                  (filled ? ambu : 'Non affecté') +
+                '</div>' +
+              '</div>',
+        iconSize: [110, 38],
+        iconAnchor: [55, 19]
+      }),
+      interactive: false
+    }).addTo(carteLayerGroup);
   });
 
-  // Marqueur hôpital
-  var hopIcon = L.divIcon({
-    className:'carte-label',
-    html:'<div style="background:#b82222;color:#fff;font-size:16px;border-radius:50%;width:28px;height:28px;display:flex;align-items:center;justify-content:center;box-shadow:0 2px 6px rgba(0,0,0,.4)">🏥</div>',
-    iconSize:[28,28], iconAnchor:[14,14]
-  });
-  L.marker([47.065, 2.403], { icon:hopIcon })
-   .bindTooltip('<b>Hôpital — SAMU 18</b>', { className:'carte-tip' })
-   .addTo(carteLayerGroup);
+  /* Marqueur hôpital */
+  L.marker([47.065, 2.403], {
+    icon: L.divIcon({
+      className: 'carte-label',
+      html: '<div style="background:#b82222;color:#fff;font-size:17px;border-radius:50%;width:32px;height:32px;display:flex;align-items:center;justify-content:center;box-shadow:0 2px 8px rgba(0,0,0,.45)">🏥</div>',
+      iconSize:[32,32], iconAnchor:[16,16]
+    })
+  }).bindTooltip('<b>Hôpital de Bourges — SAMU 18</b>', { className:'carte-tip' })
+    .addTo(carteLayerGroup);
 }
+
+/* Alias pour la compatibilité avec l'ancien nom */
+function updateCarte() { updateCarteLabels(); }
 
 /* ═══════════════════════ MODAL SMUR ════════════════════════════════ */
 function openSmurModal() {
@@ -2312,7 +2303,9 @@ document.addEventListener('DOMContentLoaded', function() {
       </div>
       <div class="carte-legend" id="carte-legend"></div>
     </div>
-    <div id="carte-map"></div>
+    <div id="carte-map">
+      <div id="carte-loading" style="display:none;position:absolute;top:50%;left:50%;transform:translate(-50%,-50%);z-index:500;background:rgba(255,255,255,.9);padding:12px 20px;border-radius:8px;font-size:12px;font-weight:700;color:#2d5aa0;box-shadow:0 2px 12px rgba(0,0,0,.15)">⏳ Chargement des communes…</div>
+    </div>
   </div>
 </div>
 
@@ -2327,8 +2320,8 @@ document.addEventListener('DOMContentLoaded', function() {
   </div>
 </div>
 
-<!-- ═══ MODAL MODÈLES & ROTATION ══════════════════════════════════════ -->
-<div class="rot-modal-overlay" id="rot-modal" onclick="if(event.target===this)closeRotation()">
+<!-- ═══ PANNEAU LATÉRAL MODÈLES & ROTATION ════════════════════════════ -->
+<div class="rot-modal-overlay" id="rot-modal">
   <div class="rot-modal-box">
     <div class="rot-modal-hd">
       <span class="ttl">🔄 Modèles de garde &amp; Rotation</span>
@@ -2570,6 +2563,6 @@ document.addEventListener('DOMContentLoaded', function() {
     </div>
   </div>
 </div>
+
 </body>
 </html>
-
