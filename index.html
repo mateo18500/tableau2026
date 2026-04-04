@@ -437,6 +437,7 @@ body.dark .stag-row select,.stag-row input{color:#fbbf24}
 .stat-btn{font-size:10.5px;padding:3px 7px;border-radius:12px;border:none;cursor:pointer;font-weight:700;white-space:nowrap;width:100%;text-align:center;transition:opacity .15s;line-height:1.4}
 .stat-btn:hover{opacity:.8}
 .stat-dispo   {background:#d4edda;color:#155724}
+.stat-transit {background:#c8f0e8;color:#00695c}
 .stat-sll     {background:#ffe0b2;color:#bf360c}
 .stat-bilan   {background:#bbdefb;color:#0d47a1}
 .stat-transport{background:#e1bee7;color:#6a1b9a}
@@ -446,6 +447,7 @@ body.dark .stag-row select,.stag-row input{color:#fbbf24}
 .stat-popup.open{display:block}
 .stat-popup button{display:block;width:100%;text-align:left;padding:7px 11px;border:2px solid transparent;background:none;cursor:pointer;border-radius:6px;font-size:12px;font-weight:700;margin:1px 0;transition:.15s;outline:none}
 .stat-popup button.stat-dispo:hover   {background:#d4edda;border-color:#28a745;color:#155724}
+.stat-popup button.stat-transit:hover {background:#c8f0e8;border-color:#00897b;color:#00695c}
 .stat-popup button.stat-sll:hover     {background:#ffe0b2;border-color:#e65100;color:#bf360c}
 .stat-popup button.stat-bilan:hover   {background:#bbdefb;border-color:#1976d2;color:#0d47a1}
 .stat-popup button.stat-transport:hover{background:#e1bee7;border-color:#8e24aa;color:#6a1b9a}
@@ -453,6 +455,7 @@ body.dark .stag-row select,.stag-row input{color:#fbbf24}
 .stat-popup button.stat-pause:hover   {background:#fff9c4;border-color:#f9a825;color:#e65100}
 body.dark .stat-popup{background:#1e2530;border:1px solid #30363d}
 body.dark .stat-btn.stat-dispo   {background:#1a3a22;color:#69d99e}
+body.dark .stat-btn.stat-transit {background:#003330;color:#4db6ac}
 body.dark .stat-btn.stat-sll     {background:#3a2000;color:#ffb74d}
 body.dark .stat-btn.stat-bilan   {background:#0a2040;color:#90caf9}
 body.dark .stat-btn.stat-transport{background:#2a0a3a;color:#ce93d8}
@@ -583,7 +586,7 @@ td.td-tel-wrap{display:flex;align-items:center;gap:4px}
 <!-- ═══ HEADER ════════════════════ -->
 <div class="page-header">
   <div class="ttl">Tableau de Garde — Hôpital</div>
-  <div class="sub"></div>
+  <div class="sub">SAMU / SMUR — Service de régulation médicale</div>
   <div>
     <input type="date" id="garde-date" data-field="date" style="position:absolute;opacity:0;width:0;height:0;pointer-events:none" onchange="updateHeaderDateLong()"/>
     <div id="header-date-long" onclick="document.getElementById('garde-date').showPicker()" title="Cliquer pour changer la date" style="cursor:pointer;font-size:14px;font-weight:600;margin-top:6px;opacity:.9;text-transform:capitalize">—</div>
@@ -815,7 +818,8 @@ td.td-tel-wrap{display:flex;align-items:center;gap:4px}
           <tr><td class="sid">B3</td><td><select class="sel-achb" data-field="an-b3"></select></td><td><input type="text" class="inp-tel" data-field="an-b3-tel" placeholder="Base ou 06…"/></td><td><button class="stat-btn stat-dispo" id="stat-an-b3" data-sid="an-b3" onclick="openStatutMenu(this)">🟢 Disponible</button></td></tr>
           <tr><td class="sid">VZ</td><td><select class="sel-avz" data-field="an-vz"></select></td><td><input type="text" class="inp-tel" data-field="an-vz-tel" placeholder="Base ou 06…"/></td><td><button class="stat-btn stat-dispo" id="stat-an-vz" data-sid="an-vz" onclick="openStatutMenu(this)">🟢 Disponible</button></td></tr>
           <tr><td class="sid">St Amd</td><td><select class="sel-astam" data-field="an-stam"></select></td><td><input type="text" class="inp-tel" data-field="an-stam-tel" placeholder="Base ou 06…"/></td><td><button class="stat-btn stat-dispo" id="stat-an-stam" data-sid="an-stam" onclick="openStatutMenu(this)">🟢 Disponible</button></td></tr>
-          
+          <tr><td class="sid">Nord</td><td><select class="sel-anord" data-field="an-nord"></select></td><td><input type="text" class="inp-tel" data-field="an-nord-tel" placeholder="Base ou 06…"/></td><td><button class="stat-btn stat-dispo" id="stat-an-nord" data-sid="an-nord" onclick="openStatutMenu(this)">🟢 Disponible</button></td></tr>
+          <tr><td class="sid">Est</td><td><select class="sel-aest" data-field="an-est"></select></td><td><input type="text" class="inp-tel" data-field="an-est-tel" placeholder="Base ou 06…"/></td><td><button class="stat-btn stat-dispo" id="stat-an-est" data-sid="an-est" onclick="openStatutMenu(this)">🟢 Disponible</button></td></tr>
         </tbody>
       </table>
     </div>
@@ -1021,7 +1025,7 @@ td.td-tel-wrap{display:flex;align-items:center;gap:4px}
   </div>
 </div>
 
-<div class="page-footer">Tableau de Garde — Usage interne — ©Matéo CALLÉJA 2026</div>
+<div class="page-footer">Tableau de Garde — Usage interne &nbsp;|&nbsp; Données sauvegardées localement dans le navigateur</div>
 </div><!-- /page -->
 
 <script src="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.min.js"></script>
@@ -2242,6 +2246,7 @@ var statutPopupTarget = null;
 
 var STATUTS_DEF = [
   {key:'dispo',      label:'🟢 Disponible',  cls:'stat-dispo'},
+  {key:'transit',    label:'🔵 En Transit',  cls:'stat-transit'},
   {key:'sll',        label:'🟠 SLL',          cls:'stat-sll'},
   {key:'bilan',      label:'🔵 Bilan',        cls:'stat-bilan'},
   {key:'transport',  label:'🟣 Transport CH', cls:'stat-transport'},
@@ -2268,6 +2273,7 @@ function initStatutFirebase() {
 
 var STATUT_ROW_COLORS = {
   dispo:     'rgba(40,180,80,.30)',
+  transit:   'rgba(0,180,150,.28)',
   sll:       'rgba(255,140,0,.42)',
   bilan:     'rgba(30,120,220,.35)',
   transport: 'rgba(140,50,200,.32)',
@@ -2922,6 +2928,7 @@ document.addEventListener('DOMContentLoaded', function() {
 <!-- ═══ POPUP STATUT AMBULANCE ═════════════════════════════════════════ -->
 <div class="stat-popup" id="stat-popup">
   <button class="stat-dispo"    onclick="setStatut('dispo')">🟢 Disponible</button>
+  <button class="stat-transit"  onclick="setStatut('transit')">🔵 En Transit</button>
   <button class="stat-sll"      onclick="setStatut('sll')">🟠 SLL</button>
   <button class="stat-bilan"    onclick="setStatut('bilan')">🔵 Bilan</button>
   <button class="stat-transport" onclick="setStatut('transport')">🟣 Transport CH</button>
