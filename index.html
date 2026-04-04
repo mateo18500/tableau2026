@@ -66,6 +66,9 @@ body.dark .aide-desc{color:#a0aec0}
 .ch{font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:.8px;padding:7px 10px;color:#fff}
 .ch-blue{background:#2d5aa0}.ch-navy{background:#1b3a6b}.ch-green{background:#2a7a3b}
 .ch-red{background:#b82222}.ch-slate{background:#4a5568}.ch-teal{background:#1a6b6b}.ch-amber{background:#8a5e00}
+.ch-smur{background:#FFE321;color:#1a1a2e}
+.ch-blue-day{background:linear-gradient(135deg,#1565c0,#1e88e5);color:#fff}
+.ch-blue-night{background:linear-gradient(135deg,#0d1b4b,#1b3a6b);color:#fff}
 
 /* ── Table ── */
 .card table{width:100%;border-collapse:collapse}
@@ -416,6 +419,20 @@ body.dark .pharm-nm{color:#c9d1d9}
 .at-copied-msg{font-size:9px;color:#2a7a3b;font-weight:700;margin-top:5px}
 .appel-empty{text-align:center;padding:36px;color:#aaa;font-size:13px}
 
+/* ══ Stagiaires SMUR ══════════════════════════════════════════════════ */
+.stag-row{display:none}
+.stag-row.visible{display:table-row}
+.stag-row td{padding:3px 5px;background:rgba(251,191,36,.10);border-bottom:1px dashed rgba(217,119,6,.25)}
+.stag-row td:first-child{border-left:3px solid #d97706;padding-left:10px}
+.stag-lbl{color:#92400e;font-size:10px;font-weight:800;letter-spacing:.4px;text-transform:uppercase;white-space:nowrap;display:flex;align-items:center;gap:3px}
+.stag-lbl::before{content:'↳';font-size:12px;color:#d97706}
+.stag-row select,.stag-row input{font-size:11.5px;font-style:italic;color:#78350f}
+.btn-stag{background:none;border:1.5px solid #d97706;color:#d97706;border-radius:50%;width:19px;height:19px;font-size:12px;font-weight:700;cursor:pointer;line-height:1;padding:0;transition:.15s;flex-shrink:0;vertical-align:middle;margin-left:3px}
+.btn-stag:hover{background:#d97706;color:#fff}
+.btn-stag.active{background:#d97706;color:#fff}
+body.dark .stag-row td{background:rgba(251,191,36,.06);border-bottom-color:rgba(217,119,6,.2)}
+body.dark .stag-row select,.stag-row input{color:#fbbf24}
+
 /* ══ Statut équipes ambulances ════════════════════════════════════════ */
 .stat-btn{font-size:10.5px;padding:3px 7px;border-radius:12px;border:none;cursor:pointer;font-weight:700;white-space:nowrap;width:100%;text-align:center;transition:opacity .15s;line-height:1.4}
 .stat-btn:hover{opacity:.8}
@@ -633,22 +650,35 @@ td.td-tel-wrap{display:flex;align-items:center;gap:4px}
       </table>
     </div>
 
-    <!-- SMUR Primaire résumé -->
+    <!-- Régulateurs Jour — colonne gauche -->
     <div class="card">
-      <div class="ch ch-blue">🚑 SMUR Primaire</div>
-      <div class="smur-sum-row"><span class="ss-lbl">Médecin</span><span class="badge bj" id="ls-sp-med-j">J —</span><span class="badge bn" id="ls-sp-med-n">N —</span></div>
-      <div class="smur-sum-row"><span class="ss-lbl">IDE</span><span class="badge bj" id="ls-sp-ide-j">J —</span><span class="badge bn" id="ls-sp-ide-n">N —</span></div>
-      <div class="smur-sum-row brd0"><span class="ss-lbl">Ambulancier</span><span class="badge bj" id="ls-sp-ambu-j">J —</span><span class="badge bn" id="ls-sp-ambu-n">N —</span></div>
-      <div class="nz" id="sp-ptable"></div>
+      <div class="ch ch-blue-day" style="text-align:center">☀️ Régulateurs — Jour</div>
+      <table>
+        <thead><tr><th>Nom</th><th style="width:60px">DECT</th></tr></thead>
+        <tbody>
+          <tr><td><select class="sel-reg" data-field="regj1-nom" style="width:100%"></select></td><td><input type="text" class="inp-sm" data-field="regj1-dect" placeholder="DECT" style="width:100%"/></td></tr>
+          <tr><td><select class="sel-reg" data-field="regj2-nom" style="width:100%"></select></td><td><input type="text" class="inp-sm" data-field="regj2-dect" placeholder="DECT" style="width:100%"/></td></tr>
+        </tbody>
+      </table>
     </div>
 
-    <!-- SMUR Secondaire résumé -->
+    <!-- Régulateurs Nuit — colonne gauche -->
     <div class="card">
-      <div class="ch ch-blue">🚑 SMUR Secondaire</div>
-      <div class="smur-sum-row"><span class="ss-lbl">Médecin</span><span class="badge bj" id="ls-ss-med-j">J —</span><span class="badge bn" id="ls-ss-med-n">N —</span></div>
-      <div class="smur-sum-row"><span class="ss-lbl">IDE</span><span class="badge bj" id="ls-ss-ide-j">J —</span><span class="badge bn" id="ls-ss-ide-n">N —</span></div>
-      <div class="smur-sum-row brd0"><span class="ss-lbl">Ambulancier</span><span class="badge bj" id="ls-ss-ambu-j">J —</span><span class="badge bn" id="ls-ss-ambu-n">N —</span></div>
-      <div class="nz"><a href="#" onclick="openSmurModal();return false;" style="color:#2d5aa0;font-size:11px;font-weight:600;text-decoration:none">➜ Organisation SMUR</a></div>
+      <div class="ch ch-navy" style="text-align:center">🌙 Régulateurs — Nuit</div>
+      <table>
+        <thead><tr><th>Nom</th><th style="width:60px">DECT</th></tr></thead>
+        <tbody>
+          <tr><td><select class="sel-reg" data-field="regn1-nom" style="width:100%"></select></td><td><input type="text" class="inp-sm" data-field="regn1-dect" placeholder="DECT" style="width:100%"/></td></tr>
+          <tr><td><select class="sel-reg" data-field="regn2-nom" style="width:100%"></select></td><td><input type="text" class="inp-sm" data-field="regn2-dect" placeholder="DECT" style="width:100%"/></td></tr>
+        </tbody>
+      </table>
+    </div>
+
+    <!-- Médecin Régulateur Libéral -->
+    <div class="card">
+      <div class="ch ch-teal" style="font-size:10px">Médecin Régulateur Libéral</div>
+      <div class="num-row"><span class="num-idx">1</span><select class="sel-rl" data-field="mrl1" style="flex:1"></select></div>
+      <div class="num-row"><span class="num-idx">2</span><select class="sel-rl" data-field="mrl2" style="flex:1"></select></div>
     </div>
 
   </div><!-- /col-left -->
@@ -659,30 +689,48 @@ td.td-tel-wrap{display:flex;align-items:center;gap:4px}
     <div class="two-col">
       <!-- SMUR Primaire -->
       <div class="card">
-        <div class="ch ch-blue" style="text-align:center">SMUR Primaire</div>
+        <div class="ch ch-smur" style="text-align:center">🚑 SMUR Primaire</div>
         <table>
           <thead><tr><th>Libellé</th><th>Nom</th><th>DECT J</th><th>DECT N</th><th>📱 Portable</th></tr></thead>
           <tbody>
             <tr>
-              <td class="rl">Médecin</td>
+              <td class="rl" style="white-space:nowrap">Médecin <button class="btn-stag" id="btn-stag-sp-med" onclick="toggleStagiaire('sp-med')" title="Ajouter stagiaire">+</button></td>
               <td><select class="sel-med" data-field="sp-med-nom"></select></td>
               <td><span class="badge bj" id="cfg-sp-med-j">J —</span></td>
               <td><span class="badge bn" id="cfg-sp-med-n">N —</span></td>
               <td><input type="text" class="inp-tel" data-field="sp-med-tel" placeholder="06…" onchange="onPortableChange()"/></td>
             </tr>
+            <tr class="stag-row" id="stag-row-sp-med">
+              <td><span class="stag-lbl">Stagiaire</span></td>
+              <td><input type="text" class="inp-sm" data-field="sp-med-stag" placeholder="Nom du stagiaire…" style="width:100%"/></td>
+              <td></td><td></td>
+              <td><input type="text" class="inp-tel" data-field="sp-med-stag-tel" placeholder="06…"/></td>
+            </tr>
             <tr>
-              <td class="rl">IDE</td>
+              <td class="rl" style="white-space:nowrap">IDE <button class="btn-stag" id="btn-stag-sp-ide" onclick="toggleStagiaire('sp-ide')" title="Ajouter stagiaire">+</button></td>
               <td><select class="sel-ide" data-field="sp-ide-nom"></select></td>
               <td><span class="badge bj" id="cfg-sp-ide-j">J —</span></td>
               <td><span class="badge bn" id="cfg-sp-ide-n">N —</span></td>
               <td><input type="text" class="inp-tel" data-field="sp-ide-tel" placeholder="06…" onchange="onPortableChange()"/></td>
             </tr>
+            <tr class="stag-row" id="stag-row-sp-ide">
+              <td><span class="stag-lbl">Stagiaire</span></td>
+              <td><input type="text" class="inp-sm" data-field="sp-ide-stag" placeholder="Nom du stagiaire…" style="width:100%"/></td>
+              <td></td><td></td>
+              <td><input type="text" class="inp-tel" data-field="sp-ide-stag-tel" placeholder="06…"/></td>
+            </tr>
             <tr>
-              <td class="rl">Ambulancier</td>
+              <td class="rl" style="white-space:nowrap">Ambulancier <button class="btn-stag" id="btn-stag-sp-ambu" onclick="toggleStagiaire('sp-ambu')" title="Ajouter stagiaire">+</button></td>
               <td><select class="sel-amb" data-field="sp-ambu-nom"></select></td>
               <td><span class="badge bj" id="cfg-sp-ambu-j">J —</span></td>
               <td><span class="badge bn" id="cfg-sp-ambu-n">N —</span></td>
               <td><input type="text" class="inp-tel" data-field="sp-ambu-tel" placeholder="06…" onchange="onPortableChange()"/></td>
+            </tr>
+            <tr class="stag-row" id="stag-row-sp-ambu">
+              <td><span class="stag-lbl">Stagiaire</span></td>
+              <td><input type="text" class="inp-sm" data-field="sp-ambu-stag" placeholder="Nom du stagiaire…" style="width:100%"/></td>
+              <td></td><td></td>
+              <td><input type="text" class="inp-tel" data-field="sp-ambu-stag-tel" placeholder="06…"/></td>
             </tr>
           </tbody>
         </table>
@@ -690,63 +738,58 @@ td.td-tel-wrap{display:flex;align-items:center;gap:4px}
 
       <!-- SMUR Secondaire -->
       <div class="card">
-        <div class="ch ch-blue" style="text-align:center">SMUR Secondaire</div>
+        <div class="ch ch-smur" style="text-align:center">🚑 SMUR Secondaire</div>
         <table>
           <thead><tr><th>Libellé</th><th>Nom</th><th>DECT J</th><th>DECT N</th><th>📱 Portable</th></tr></thead>
           <tbody>
             <tr>
-              <td class="rl">Médecin</td>
+              <td class="rl" style="white-space:nowrap">Médecin <button class="btn-stag" id="btn-stag-ss-med" onclick="toggleStagiaire('ss-med')" title="Ajouter stagiaire">+</button></td>
               <td><select class="sel-med" data-field="ss-med-nom"></select></td>
               <td><span class="badge bj" id="cfg-ss-med-j">J —</span></td>
               <td><span class="badge bn" id="cfg-ss-med-n">N —</span></td>
               <td><input type="text" class="inp-tel" data-field="ss-med-tel" placeholder="06…" onchange="onPortableChange()"/></td>
             </tr>
+            <tr class="stag-row" id="stag-row-ss-med">
+              <td><span class="stag-lbl">Stagiaire</span></td>
+              <td><input type="text" class="inp-sm" data-field="ss-med-stag" placeholder="Nom du stagiaire…" style="width:100%"/></td>
+              <td></td><td></td>
+              <td><input type="text" class="inp-tel" data-field="ss-med-stag-tel" placeholder="06…"/></td>
+            </tr>
             <tr>
-              <td class="rl">IDE</td>
+              <td class="rl" style="white-space:nowrap">IDE <button class="btn-stag" id="btn-stag-ss-ide" onclick="toggleStagiaire('ss-ide')" title="Ajouter stagiaire">+</button></td>
               <td><select class="sel-ide" data-field="ss-ide-nom"></select></td>
               <td><span class="badge bj" id="cfg-ss-ide-j">J —</span></td>
               <td><span class="badge bn" id="cfg-ss-ide-n">N —</span></td>
               <td><input type="text" class="inp-tel" data-field="ss-ide-tel" placeholder="06…" onchange="onPortableChange()"/></td>
             </tr>
+            <tr class="stag-row" id="stag-row-ss-ide">
+              <td><span class="stag-lbl">Stagiaire</span></td>
+              <td><input type="text" class="inp-sm" data-field="ss-ide-stag" placeholder="Nom du stagiaire…" style="width:100%"/></td>
+              <td></td><td></td>
+              <td><input type="text" class="inp-tel" data-field="ss-ide-stag-tel" placeholder="06…"/></td>
+            </tr>
             <tr>
-              <td class="rl">Ambulancier</td>
+              <td class="rl" style="white-space:nowrap">Ambulancier <button class="btn-stag" id="btn-stag-ss-ambu" onclick="toggleStagiaire('ss-ambu')" title="Ajouter stagiaire">+</button></td>
               <td><select class="sel-amb" data-field="ss-ambu-nom"></select></td>
               <td><span class="badge bj" id="cfg-ss-ambu-j">J —</span></td>
               <td><span class="badge bn" id="cfg-ss-ambu-n">N —</span></td>
               <td><input type="text" class="inp-tel" data-field="ss-ambu-tel" placeholder="06…" onchange="onPortableChange()"/></td>
+            </tr>
+            <tr class="stag-row" id="stag-row-ss-ambu">
+              <td><span class="stag-lbl">Stagiaire</span></td>
+              <td><input type="text" class="inp-sm" data-field="ss-ambu-stag" placeholder="Nom du stagiaire…" style="width:100%"/></td>
+              <td></td><td></td>
+              <td><input type="text" class="inp-tel" data-field="ss-ambu-stag-tel" placeholder="06…"/></td>
             </tr>
           </tbody>
         </table>
       </div>
     </div>
 
-    <!-- Régulateurs -->
-    <div class="two-col">
-      <div class="card">
-        <div class="ch ch-green" style="text-align:center">Régulateurs — Jour</div>
-        <table>
-          <thead><tr><th>MRU</th><th>Nom</th><th>DECT</th></tr></thead>
-          <tbody>
-            <tr><td><span class="badge bm">J1</span></td><td><select class="sel-reg" data-field="regj1-nom"></select></td><td><input type="text" class="inp-sm" data-field="regj1-dect" placeholder="DECT"/></td></tr>
-            <tr><td><span class="badge bm">J2</span></td><td><select class="sel-reg" data-field="regj2-nom"></select></td><td><input type="text" class="inp-sm" data-field="regj2-dect" placeholder="DECT"/></td></tr>
-          </tbody>
-        </table>
-      </div>
-      <div class="card">
-        <div class="ch ch-navy" style="text-align:center">Régulateurs — Nuit</div>
-        <table>
-          <thead><tr><th>MRU</th><th>Nom</th><th>DECT</th></tr></thead>
-          <tbody>
-            <tr><td><span class="badge bm">N1</span></td><td><select class="sel-reg" data-field="regn1-nom"></select></td><td><input type="text" class="inp-sm" data-field="regn1-dect" placeholder="DECT"/></td></tr>
-            <tr><td><span class="badge bm">N2</span></td><td><select class="sel-reg" data-field="regn2-nom"></select></td><td><input type="text" class="inp-sm" data-field="regn2-dect" placeholder="DECT"/></td></tr>
-          </tbody>
-        </table>
-      </div>
-    </div>
 
     <!-- Ambulances Jour -->
     <div class="card">
-      <div class="ch ch-green" style="text-align:center;padding:9px 10px">🌤️ &nbsp;Ambulances de Garde — Jour</div>
+      <div class="ch ch-blue-day" style="text-align:center;padding:9px 10px">🌤️ &nbsp;Ambulances de Garde — Jour</div>
       <table>
         <thead><tr><th style="width:52px">Secteur</th><th>Ambulance</th><th>Téléphone</th><th style="width:108px">Statut</th></tr></thead>
         <tbody>
@@ -763,7 +806,7 @@ td.td-tel-wrap{display:flex;align-items:center;gap:4px}
 
     <!-- Ambulances Nuit -->
     <div class="card">
-      <div class="ch ch-red" style="text-align:center;padding:9px 10px">🌙 &nbsp;Ambulances de Garde — Nuit</div>
+      <div class="ch ch-blue-night" style="text-align:center;padding:9px 10px">🌙 &nbsp;Ambulances de Garde — Nuit</div>
       <table>
         <thead><tr><th style="width:52px">Secteur</th><th>Ambulance</th><th>Téléphone</th><th style="width:108px">Statut</th></tr></thead>
         <tbody>
@@ -789,18 +832,7 @@ td.td-tel-wrap{display:flex;align-items:center;gap:4px}
   <div class="col col-right">
 
     <div class="card">
-      <div class="ch ch-teal" style="font-size:10px">Médecin Régulateur Libéral</div>
-      <div class="num-row"><span class="num-idx">1</span><select class="sel-rl" data-field="mrl1" style="flex:1"></select></div>
-      <div class="num-row"><span class="num-idx">2</span><select class="sel-rl" data-field="mrl2" style="flex:1"></select></div>
-    </div>
-
-    <div class="card">
-      <div class="ch ch-slate">Administrateur de Garde</div>
-      <div style="padding:7px 10px"><select class="sel-dir" data-field="admin-garde" style="width:100%"></select></div>
-    </div>
-
-    <div class="card">
-      <div class="ch ch-blue">Ambulance de Sortie</div>
+      <div class="ch ch-slate">Ambulance de Sortie</div>
       <table>
         <thead><tr><th>Ambulance</th><th>Téléphone</th></tr></thead>
         <tbody><tr>
@@ -811,7 +843,7 @@ td.td-tel-wrap{display:flex;align-items:center;gap:4px}
     </div>
 
     <div class="card">
-      <div class="ch ch-navy">Ambulance de GHT</div>
+      <div class="ch ch-slate">Ambulance de GHT</div>
       <table>
         <thead><tr><th>Ambulance</th><th>Téléphone</th></tr></thead>
         <tbody><tr>
@@ -824,7 +856,7 @@ td.td-tel-wrap{display:flex;align-items:center;gap:4px}
     <div class="card">
       <div class="ch ch-green" style="display:flex;justify-content:space-between;align-items:center">
         <span>💊 Pharmacie de Garde</span>
-        <a href="https://www.resogardes.com/index.php" target="_blank" rel="noopener" title="Trouver une pharmacie de garde en ligne" style="background:rgba(255,255,255,.22);color:#fff;border:1px solid rgba(255,255,255,.5);border-radius:10px;padding:2px 8px;font-size:10px;font-weight:700;text-decoration:none;white-space:nowrap;transition:.15s" onmouseover="this.style.background='rgba(255,255,255,.38)'" onmouseout="this.style.background='rgba(255,255,255,.22)'">🌐 Site officiel</a>
+        <a href="https://www.pharmaciesurordonnance.org/" target="_blank" rel="noopener" title="Trouver une pharmacie de garde en ligne" style="background:rgba(255,255,255,.22);color:#fff;border:1px solid rgba(255,255,255,.5);border-radius:10px;padding:2px 8px;font-size:10px;font-weight:700;text-decoration:none;white-space:nowrap;transition:.15s" onmouseover="this.style.background='rgba(255,255,255,.38)'" onmouseout="this.style.background='rgba(255,255,255,.22)'">🌐 Site officiel</a>
       </div>
       <div style="padding:6px 8px 8px">
         <select id="pharm-zone" onchange="renderPharmGarde()" style="width:100%;margin-bottom:5px">
@@ -834,6 +866,11 @@ td.td-tel-wrap{display:flex;align-items:center;gap:4px}
         </select>
         <div id="pharm-garde-list" class="pharm-garde-list"></div>
       </div>
+    </div>
+
+    <div class="card">
+      <div class="ch ch-slate">Administrateur de Garde</div>
+      <div style="padding:7px 10px"><select class="sel-dir" data-field="admin-garde" style="width:100%"></select></div>
     </div>
 
     <div class="card">
@@ -984,7 +1021,7 @@ td.td-tel-wrap{display:flex;align-items:center;gap:4px}
   </div>
 </div>
 
-<div class="page-footer">Tableau de Garde — Usage interne - ©Matéo CALLÉJA 2026</div>
+<div class="page-footer">Tableau de Garde — Usage interne — ©Matéo CALLÉJA 2026</div>
 </div><!-- /page -->
 
 <script src="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.min.js"></script>
@@ -2004,6 +2041,46 @@ function updateProgress() {
 }
 setInterval(updateProgress, 1000);
 
+/* ═══════════════════════ STAGIAIRES ═════════════════════════════════ */
+var STAG_KEYS = ['sp-med','sp-ide','sp-ambu','ss-med','ss-ide','ss-ambu'];
+
+function toggleStagiaire(key) {
+  var row = document.getElementById('stag-row-' + key);
+  var btn = document.getElementById('btn-stag-' + key);
+  if (!row || !btn) return;
+  var isVisible = row.classList.contains('visible');
+  if (isVisible) {
+    row.classList.remove('visible');
+    btn.classList.remove('active');
+    btn.textContent = '+';
+    btn.title = 'Ajouter stagiaire';
+    /* Vider les champs stagiaire quand on ferme */
+    var sel = row.querySelector('select');
+    var inp = row.querySelector('input');
+    if (sel) sel.value = '';
+    if (inp) inp.value = '';
+    scheduleAutoSave();
+  } else {
+    row.classList.add('visible');
+    btn.classList.add('active');
+    btn.textContent = '−';
+    btn.title = 'Masquer stagiaire';
+  }
+}
+
+/* Restaurer la visibilité des lignes stagiaires au chargement */
+function restoreStagRows() {
+  STAG_KEYS.forEach(function(key) {
+    var sel = document.querySelector('[data-field="' + key + '-stag"]');
+    if (sel && sel.value) {
+      var row = document.getElementById('stag-row-' + key);
+      var btn = document.getElementById('btn-stag-' + key);
+      if (row) row.classList.add('visible');
+      if (btn) { btn.classList.add('active'); btn.textContent = '−'; }
+    }
+  });
+}
+
 /* ═══════════════════════ FICHE INFO DOUBLE-CLIC ═════════════════════ */
 function getDectForName(name) {
   if (!name) return '';
@@ -2053,9 +2130,10 @@ function showInfoCard(el, name) {
 
 /* Champs "nom de personne" (pas ambulances) qui ont droit au bouton ℹ️ */
 var INFO_FIELDS = [
-  'regj1-nom','regj2-nom','regn1-nom','regn2-nom',
   'sp-med-nom','sp-ide-nom','sp-ambu-nom',
+  'sp-med-stag','sp-ide-stag','sp-ambu-stag',
   'ss-med-nom','ss-ide-nom','ss-ambu-nom',
+  'ss-med-stag','ss-ide-stag','ss-ambu-stag',
   'mrl1','mrl2','admin-garde'
 ];
 
@@ -2671,6 +2749,7 @@ document.addEventListener('DOMContentLoaded', function() {
   injectBaseButtons();
   injectInfoButtons();
   initStatutFirebase();
+  restoreStagRows();
   checkAlerteSecteurs();
   // Restaurer préférence dark mode
   try {
